@@ -1,7 +1,7 @@
 import { User, Tooltip, Chip } from "@nextui-org/react";
 import React from "react";
-import { DeleteIcon } from "../../icons/table/delete-icon";
-import { EditIcon } from "../../icons/table/edit-icon";
+import { DeleteIcon } from "@/components/icons/table/delete-icon";
+import { EditIcon } from "@/components/icons/table/edit-icon";
 
 interface Props {
   user: any;

@@ -5,8 +5,9 @@ import Panel from "@/components/panel/panel";
 import * as Yup from 'yup';
 import { Form } from "@/components/form/form";
 import { FormikProps } from 'formik';
-import { DocumentUploadSidebar } from '@/components/document-upload-sidebar';
-import { NonInvoicedExpenseDrawer } from '@/components/non-invoiced-expense-drawer';
+import { DocumentUploadSidebar } from "../document-upload-sidebar";
+import { NonInvoicedExpenseDrawer } from "../non-invoiced-expense-drawer";
+import { useRouter } from "next/navigation";
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string().required('Ad zorunludur'),
@@ -170,6 +171,7 @@ const validationSchema3 = Yup.object().shape({
 });
 
 export const IncapacityCompensationNew = () => {
+  const router = useRouter();
   const form1Ref = useRef<FormikProps<any>>(null);
   const form2Ref = useRef<FormikProps<any>>(null);
   const form3Ref = useRef<FormikProps<any>>(null);
@@ -272,14 +274,12 @@ export const IncapacityCompensationNew = () => {
 
   const handleSubmit = async () => {
     try {
-      // Tüm formları submit et
       await Promise.all([
         form1Ref.current?.submitForm(),
         form2Ref.current?.submitForm(),
         form3Ref.current?.submitForm()
       ]);
 
-      // Tüm formların validation durumunu kontrol et
       const isForm1Valid = await form1Ref.current?.validateForm();
       const isForm2Valid = await form2Ref.current?.validateForm();
       const isForm3Valid = await form3Ref.current?.validateForm();
@@ -288,7 +288,6 @@ export const IncapacityCompensationNew = () => {
       const values2 = form2Ref.current?.values;
       const values3 = form3Ref.current?.values;
 
-      // Eğer tüm formlar geçerliyse
       if (
         Object.keys(isForm1Valid || {}).length === 0 &&
         Object.keys(isForm2Valid || {}).length === 0 &&
@@ -301,7 +300,8 @@ export const IncapacityCompensationNew = () => {
         };
 
         console.log(allValues);
-        // Burada form başarıyla geçerli olduğunda yapılacak işlemleri ekleyebilirsiniz
+        // Hesaplama sonuç sayfasına yönlendir
+        router.push("/is-goremezlik-tazminati/sonuc");
       }
     } catch (error) {
       console.error('Form validation failed:', error);
@@ -382,22 +382,24 @@ export const IncapacityCompensationNew = () => {
         </Panel>
       </div>
 
-      <div className="flex gap-4 justify-between">
-        <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4 justify-between">
+        <div className="flex flex-wrap gap-4 w-full md:w-auto">
           <Button 
             color="primary"
             onPress={() => setIsDocumentUploadOpen(true)}
+            className="w-full md:w-auto"
           >
             Evrak Ekle
           </Button>
           <Button 
             color="primary"
             onPress={() => setIsNonInvoicedExpenseOpen(true)}
+            className="w-full md:w-auto"
           >
             Fatura Edilemeyen Gider Ekle
           </Button>
         </div>
-        <Button color="success" onPress={handleSubmit}>Hesapla</Button>
+        <Button color="success" onPress={handleSubmit} className="w-full md:w-auto">Hesapla</Button>
       </div>
 
       <DocumentUploadSidebar 

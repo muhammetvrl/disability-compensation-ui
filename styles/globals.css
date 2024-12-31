@@ -11,3 +11,18 @@ body {
 * {
   box-sizing: border-box;
 }
+
+@media print {
+  @page {
+    margin: 10mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  button {
+    display: none !important;
+  }
+}

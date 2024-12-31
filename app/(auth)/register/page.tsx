@@ -1,5 +1,5 @@
 import React from "react";
-import { Register } from "@/components/auth/register";
+import { Register } from "@/container/auth/register";
 
 const register = () => {
   return <Register />;

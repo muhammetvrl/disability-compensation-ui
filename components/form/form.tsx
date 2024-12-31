@@ -27,6 +27,15 @@ export const Form: FC<FormProps> = ({
     let formatter = useDateFormatter({dateStyle: "full"});
 
     const renderField = (field: FormField, form: any) => {
+        const switchProps = {
+            name: field.name,
+            label: field.label,
+            placeholder: field.placeholder,
+            disabled: field.disabled,
+            startContent: field.startContent,
+            endContent: field.endContent,
+        };
+
         const commonProps = {
             name: field.name,
             label: field.label,
@@ -70,14 +79,28 @@ export const Form: FC<FormProps> = ({
                 return (
                     <Field name={field.name}>
                         {({ field: formikField }: any) => (
-                            <Switch
-                                {...commonProps}
-                                {...formikField}
-                                description={field.helperText}
-                                isSelected={form.values[field.name]}
-                                onValueChange={(value) => form.setFieldValue(field.name, value)}
-                                isInvalid={!!error}
-                            >{field.label}</Switch>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1">
+                                    <Switch
+                                        {...switchProps}
+                                        {...formikField}
+                                        description={field.helperText}
+                                        isSelected={form.values[field.name]}
+                                        onValueChange={(value) => form.setFieldValue(field.name, value)}
+                                        classNames={{
+                                            base: error ? "border-danger" : ""
+                                        }}
+                                    >
+                                        {field.label}
+                                    </Switch>
+                                    {field.required && (
+                                        <span className="text-danger">*</span>
+                                    )}
+                                </div>
+                                {error && (
+                                    <div className="text-danger text-xs">{error}</div>
+                                )}
+                            </div>
                         )}
                     </Field>
                 );
@@ -197,11 +220,11 @@ export const Form: FC<FormProps> = ({
                         {fields.map((field) => (
                             <div
                                 key={field.name}
-                                className={[
-                                    'col-span-1', 'col-span-2', 'col-span-3', 'col-span-4',
-                                    'col-span-5', 'col-span-6', 'col-span-7', 'col-span-8',
-                                    'col-span-9', 'col-span-10', 'col-span-11', 'col-span-12'
-                                ][(field.col || defaultCol) - 1]}
+                                className={`col-span-12 ${[
+                                    'sm:col-span-1', 'sm:col-span-2', 'sm:col-span-3', 'sm:col-span-4',
+                                    'sm:col-span-5', 'sm:col-span-6', 'sm:col-span-7', 'sm:col-span-8',
+                                    'sm:col-span-9', 'sm:col-span-10', 'sm:col-span-11', 'sm:col-span-12'
+                                ][(field.col || defaultCol) - 1]}`}
                             >
                                 {renderField(field, { 
                                     values, 

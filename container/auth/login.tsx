@@ -1,53 +1,49 @@
 "use client";
 
 import { createAuthCookie } from "@/actions/auth.action";
-import { RegisterSchema } from "@/helpers/schemas";
-import { RegisterFormType } from "@/helpers/types";
+import { LoginSchema } from "@/helpers/schemas";
+import { LoginFormType } from "@/helpers/types";
 import { Button, Input } from "@nextui-org/react";
 import { Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { authService } from "@/services/auth";
 
-export const Register = () => {
+export const Login = () => {
   const router = useRouter();
 
-  const initialValues: RegisterFormType = {
-    name: "Acme",
-    email: "admin@acme.com",
-    password: "admin",
-    confirmPassword: "admin",
+  const initialValues: LoginFormType = {
+    email: "e.mertdemircan@gmail.com",
+    password: "1234",
   };
 
-  const handleRegister = useCallback(
-    async (values: RegisterFormType) => {
-      // `values` contains name, email & password. You can use provider to register user
-
-      await createAuthCookie();
-      router.replace("/");
+  const handleLogin = useCallback(
+    async (values: LoginFormType) => {
+      try {
+        const { data } = await authService.login(values);
+        if (data.token) {
+          await createAuthCookie(data.token);
+          router.replace("/");
+        }
+      } catch (error) {
+        console.error(error);
+      }
     },
     [router]
   );
 
   return (
     <>
-      <div className='text-center text-[25px] font-bold mb-6'>Register</div>
+      <div className='text-center text-[25px] font-bold mb-6'>Login</div>
 
       <Formik
         initialValues={initialValues}
-        validationSchema={RegisterSchema}
-        onSubmit={handleRegister}>
+        validationSchema={LoginSchema}
+        onSubmit={handleLogin}>
         {({ values, errors, touched, handleChange, handleSubmit }) => (
           <>
             <div className='flex flex-col w-1/2 gap-4 mb-4'>
-              <Input
-                variant='bordered'
-                label='Name'
-                value={values.name}
-                isInvalid={!!errors.name && !!touched.name}
-                errorMessage={errors.name}
-                onChange={handleChange("name")}
-              />
               <Input
                 variant='bordered'
                 label='Email'
@@ -66,33 +62,22 @@ export const Register = () => {
                 errorMessage={errors.password}
                 onChange={handleChange("password")}
               />
-              <Input
-                variant='bordered'
-                label='Confirm password'
-                type='password'
-                value={values.confirmPassword}
-                isInvalid={
-                  !!errors.confirmPassword && !!touched.confirmPassword
-                }
-                errorMessage={errors.confirmPassword}
-                onChange={handleChange("confirmPassword")}
-              />
             </div>
 
             <Button
               onPress={() => handleSubmit()}
               variant='flat'
               color='primary'>
-              Register
+              Login
             </Button>
           </>
         )}
       </Formik>
 
       <div className='font-light text-slate-400 mt-4 text-sm'>
-        Already have an account ?{" "}
-        <Link href='/login' className='font-bold'>
-          Login here
+        Don&apos;t have an account ?{" "}
+        <Link href='/register' className='font-bold'>
+          Register here
         </Link>
       </div>
     </>

@@ -3,32 +3,30 @@ import { FC } from 'react';
 import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button } from "@nextui-org/react";
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
-import { FormField } from '../form/types';
+import { FormField } from '@/components/form/types';
 
-interface NonInvoicedExpenseDrawerProps {
+interface DocumentUploadSidebarProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
 const validationSchema = Yup.object().shape({
-    expenseType: Yup.string().required('Masraf tipi zorunludur'),
+    documentType: Yup.string().required('Evrak tipi zorunludur'),
     referenceNo: Yup.string().required('Referans no zorunludur'),
     date: Yup.date().required('Tarih zorunludur'),
-    amount: Yup.number().required('Tutar zorunludur').positive('Tutar pozitif olmalıdır'),
     file: Yup.mixed().required('Dosya zorunludur'),
 });
 
 const fields = [
     {
-        name: 'expenseType',
-        label: 'Masraf Tipi',
+        name: 'documentType',
+        label: 'Evrak Tipi',
         type: 'select' as const,
         required: true,
         options: [
-            { label: 'Yemek', value: 'food' },
-            { label: 'Ulaşım', value: 'transportation' },
-            { label: 'Konaklama', value: 'accommodation' },
-            { label: 'Diğer', value: 'other' },
+            { label: 'Muayene Raporu', value: 'examination_report' },
+            { label: 'Mahkeme Kararı', value: 'court_decision' },
+            { label: 'SGK Belgesi', value: 'sgk_document' },
         ],
         col: 12
     },
@@ -47,13 +45,6 @@ const fields = [
         col: 12
     },
     {
-        name: 'amount',
-        label: 'Tutar',
-        type: 'number' as const,
-        required: true,
-        col: 12
-    },
-    {
         name: 'file',
         label: 'Dosya Yükle',
         type: 'file' as const,
@@ -63,10 +54,10 @@ const fields = [
     }
 ];
 
-export const NonInvoicedExpenseDrawer: FC<NonInvoicedExpenseDrawerProps> = ({ isOpen, onClose }) => {
+export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({ isOpen, onClose }) => {
     const handleSubmit = async (values: any) => {
-        console.log('Gider bilgileri:', values);
-        // Burada gider kaydetme işlemlerini yapabilirsiniz
+        console.log('Yüklenen dosya bilgileri:', values);
+        // Burada dosya yükleme işlemlerini yapabilirsiniz
         onClose();
     };
 
@@ -79,16 +70,13 @@ export const NonInvoicedExpenseDrawer: FC<NonInvoicedExpenseDrawerProps> = ({ is
             scrollBehavior="inside"
         >
             <DrawerContent>
-                <DrawerHeader className="flex flex-col gap-1">
-                    Fatura Edilemeyen Gider Listesi
-                </DrawerHeader>
+                <DrawerHeader className="flex flex-col gap-1">Evrak Listesi</DrawerHeader>
                 <DrawerBody>
                     <Form
                         initialValues={{
-                            expenseType: '',
+                            documentType: '',
                             referenceNo: '',
                             date: '',
-                            amount: '',
                             file: null
                         }}
                         fields={fields as FormField[]}

@@ -14,10 +14,16 @@ interface TableWrapperProps<T> {
     uid: string;
     name: string;
   }[];
-  renderCell: (item: T, columnKey: string) => React.ReactNode;
+  renderCell?: (item: T, columnKey: string) => React.ReactNode;
+  rowKey?: keyof T;
 }
 
-export function TableWrapper<T>({ data, columns, renderCell }: TableWrapperProps<T>) {
+export function TableWrapper<T extends { [key: string]: React.ReactNode }>({ 
+  data, 
+  columns, 
+  renderCell,
+  rowKey = 'id'
+}: TableWrapperProps<T>) {
   return (
     <div className="w-full flex flex-col gap-4">
       <Table aria-label="Dynamic table with custom cells">
@@ -34,10 +40,10 @@ export function TableWrapper<T>({ data, columns, renderCell }: TableWrapperProps
         </TableHeader>
         <TableBody items={data}>
           {(item) => (
-            <TableRow>
+            <TableRow key={String(item[rowKey])}>
               {(columnKey) => (
                 <TableCell>
-                  {renderCell(item, columnKey.toString())}
+                  {renderCell ? renderCell(item, columnKey.toString()) : item[columnKey]}
                 </TableCell>
               )}
             </TableRow>

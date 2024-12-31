@@ -1,5 +1,5 @@
 import React from "react";
-import { IncapacityCompensationNew } from "@/components/is-goremezlik-tazminati/action";
+import { IncapacityCompensationNew } from "@/container/is-goremezlik-tazminati/action";
 
 const IncapacityCompensationPageNewPage = () => {
   return <IncapacityCompensationNew />;
