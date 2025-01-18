@@ -1,19 +1,32 @@
 "use client";
 import { Button, Input, Link } from "@nextui-org/react";
 import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { DotsIcon } from "@/components/icons/accounts/dots-icon";
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
 import { InfoIcon } from "@/components/icons/accounts/info-icon";
 import { TrashIcon } from "@/components/icons/accounts/trash-icon";
 import { SettingsIcon } from "@/components/icons/sidebar/settings-icon";
 import { TableWrapper } from "@/components/table/table";
-import { columns, users } from "../common/data";
+import { columns } from "../common/data";
 import { RenderCell } from "../common/render-cell";
 import { ROUTES } from "@/helpers/urls";
+import { compensationService } from "@/services/compensations";
 
 
 export const IncapacityCompensation = () => {
+
+  const [compensations, setCompensations] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await compensationService.list();
+      setCompensations(res.items || []);
+    };
+    
+    fetchData();
+  }, []);
+
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <Breadcrumbs radius={"sm"} variant="solid">
@@ -54,7 +67,7 @@ export const IncapacityCompensation = () => {
       </div>
       <div className="max-w-[95rem] mx-auto w-full">
         <TableWrapper
-          data={users}
+          data={compensations}
           columns={columns}
           renderCell={(user, columnKey) => RenderCell({ user, columnKey })}
         />

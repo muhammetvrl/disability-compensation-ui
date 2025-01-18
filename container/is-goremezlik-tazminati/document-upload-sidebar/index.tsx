@@ -1,13 +1,20 @@
 "use client";
-import { FC } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button } from "@nextui-org/react";
+import { FC, useRef } from 'react';
+import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, CalendarDate } from "@nextui-org/react";
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
-import { FormField } from '@/components/form/types';
+import { FormField } from '@/components/form/types'
+import { formatDateString } from '@/utils/formatDate';
+import { Trash2 } from "lucide-react";
+import { FormikHelpers } from 'formik';
+import { Document } from '../action';
+
 
 interface DocumentUploadSidebarProps {
     isOpen: boolean;
     onClose: () => void;
+    documents: Document[];
+    setDocuments: (documents: Document[]) => void;
 }
 
 const validationSchema = Yup.object().shape({
@@ -54,35 +61,114 @@ const fields = [
     }
 ];
 
-export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({ isOpen, onClose }) => {
-    const handleSubmit = async (values: any) => {
-        console.log('Yüklenen dosya bilgileri:', values);
-        // Burada dosya yükleme işlemlerini yapabilirsiniz
-        onClose();
+export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({
+    isOpen,
+    onClose,
+    documents,
+    setDocuments
+}) => {
+    const formRef = useRef<any>(null);
+    
+    const initialValues = {
+        documentType: '',
+        referenceNo: '',
+        date: '',
+        file: null
+    };
+
+    const handleSubmit = async (values: any, formikHelpers: FormikHelpers<any>) => {
+        try {
+            const document: Document = {
+                documentType: values.documentType,
+                referenceNo: values.referenceNo,
+                date: values.date,
+                file: values.file
+            };
+            setDocuments([...documents, document]);
+            formikHelpers.resetForm();
+        } catch (error) {
+            console.error('Form submission error:', error);
+            formikHelpers.setSubmitting(false);
+        }
+    };
+
+    const handleDeleteDocument = (index: number) => {
+        const newDocuments = documents.filter((_, i) => i !== index);
+        setDocuments(newDocuments);
+        formRef.current?.resetForm({ values: initialValues });
     };
 
     return (
-        <Drawer 
-            isOpen={isOpen} 
+        <Drawer
+            isOpen={isOpen}
             onClose={onClose}
             placement="right"
-            size="lg"
+            size="2xl"
             scrollBehavior="inside"
         >
             <DrawerContent>
                 <DrawerHeader className="flex flex-col gap-1">Evrak Listesi</DrawerHeader>
                 <DrawerBody>
                     <Form
-                        initialValues={{
-                            documentType: '',
-                            referenceNo: '',
-                            date: '',
-                            file: null
-                        }}
+                        formRef={formRef}
+                        initialValues={initialValues}
                         fields={fields as FormField[]}
                         validationSchema={validationSchema}
                         onSubmit={handleSubmit}
+                        submitButtonProps={{
+                            children: "Kaydet",
+                            color: "primary",
+                            className: "w-full"
+                        }}
                     />
+                    {documents.length > 0 && (
+                        <div className="mb-4">
+                            <Table aria-label="Yüklenen Dökümanlar" className="mb-4">
+                                <TableHeader>
+                                    <TableColumn>EVRAK TİPİ</TableColumn>
+                                    <TableColumn>REFERANS NO</TableColumn>
+                                    <TableColumn>TARİH</TableColumn>
+                                    <TableColumn>İŞLEMLER</TableColumn>
+                                </TableHeader>
+                                <TableBody>
+                                    {documents.map((doc, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                {fields.find(f => f.name === 'documentType')?.options?.find(
+                                                    opt => opt.value === doc.documentType
+                                                )?.label || doc.documentType}
+                                            </TableCell>
+                                            <TableCell>{doc.referenceNo}</TableCell>
+                                            <TableCell>
+                                                {formatDateString(doc.date)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        color="primary"
+                                                        variant="light"
+                                                        onPress={() => window.open(URL.createObjectURL(doc.file))}
+                                                    >
+                                                        Görüntüle
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        color="danger"
+                                                        variant="light"
+                                                        onPress={() => handleDeleteDocument(index)}
+                                                        startContent={<Trash2 size={16} />}
+                                                    >
+                                                        Sil
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
                 </DrawerBody>
                 <DrawerFooter>
                     <Button color="danger" variant="light" onPress={onClose}>

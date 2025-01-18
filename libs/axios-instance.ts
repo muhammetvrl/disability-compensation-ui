@@ -6,6 +6,14 @@ import axios, {
 } from 'axios'
 import { getBaseUrl } from './env'
 
+// Cookie'den token'ı almak için yardımcı fonksiyon
+export const getTokenFromCookie = (): string | null => {
+  const cookies = document.cookie.split(';')
+  const tokenCookie = cookies.find(cookie => cookie.trim().startsWith('userAuth='))
+  if (!tokenCookie) return null
+  return tokenCookie.split('=')[1].trim()
+}
+
 export class ApiError extends Error {
   constructor(
     public statusCode: number,
@@ -26,10 +34,9 @@ export function createAxiosInstance(): AxiosInstance {
     },
   })
 
-
   instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+      const token = typeof window !== 'undefined' ? getTokenFromCookie() : null
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -40,7 +47,7 @@ export function createAxiosInstance(): AxiosInstance {
 
   // Response interceptor
   instance.interceptors.response.use(
-    (response: AxiosResponse) => response.data,
+    (response: AxiosResponse) => response?.data,
     (error: AxiosError) => {
       const response = error.response
 
@@ -52,12 +59,6 @@ export function createAxiosInstance(): AxiosInstance {
           response.data
         )
       }
-
-      // Ağ hatası veya timeout durumu
-      throw new ApiError(
-        500,
-        'Sunucuya bağlanılamıyor. Lütfen internet bağlantınızı kontrol edin.',
-      )
     }
   )
 

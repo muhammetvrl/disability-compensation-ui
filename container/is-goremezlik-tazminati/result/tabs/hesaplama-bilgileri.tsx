@@ -62,7 +62,7 @@ const printStyles = `
   }
 `;
 
-export const HesaplamaBilgileri = () => {
+export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
   const componentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({

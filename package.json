@@ -24,6 +24,7 @@
     "react-apexcharts": "^1.4.0",
     "react-dom": "18.2.0",
     "react-to-print": "^3.0.4",
+    "react-toastify": "^11.0.3",
     "yup": "^1.4.0"
   },
   "devDependencies": {

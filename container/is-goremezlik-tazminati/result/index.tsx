@@ -4,7 +4,7 @@ import React from "react";
 import { DosyaBilgileri } from "./tabs/dosya-bilgileri";
 import { HesaplamaBilgileri } from "./tabs/hesaplama-bilgileri";
 
-export const IncapacityCompensationResult = () => {
+export const IncapacityCompensationResult = ({ id, detail }: { id: string, detail: any } ) => {
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4 mt-9">
       <Breadcrumbs radius={"sm"} variant="solid">
@@ -30,13 +30,13 @@ export const IncapacityCompensationResult = () => {
             key="dosya-bilgileri"
             title="Dosya Bilgileri"
           >
-            <DosyaBilgileri />
+            <DosyaBilgileri detail={detail} />
           </Tab>
           <Tab
             key="hesaplama-bilgileri"
             title="Hesaplama Bilgileri"
           >
-            <HesaplamaBilgileri />
+            <HesaplamaBilgileri detail={detail} />
           </Tab>
         </Tabs>
       </div>

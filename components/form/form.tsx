@@ -1,18 +1,19 @@
-import { FC } from 'react';
-import { Formik, Form as FormikForm, Field } from 'formik';
-import { Input, Select, Switch, Button, SelectItem, DatePicker, Textarea } from '@nextui-org/react';
+import { FC, RefObject } from 'react';
+import { Formik, Form as FormikForm, Field, FormikProps, FormikHelpers } from 'formik';
+import { Input, Select, Switch, Button, SelectItem, DatePicker, Textarea, ButtonProps } from '@nextui-org/react';
 import { FormField, SelectOption } from './types';
-import {I18nProvider, useDateFormatter} from "@react-aria/i18n";
-import { getLocalTimeZone, parseAbsoluteToLocal, ZonedDateTime, CalendarDate } from '@internationalized/date';
+import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
+import { CalendarDate } from '@internationalized/date';
 
 interface FormProps {
     initialValues: Record<string, any>;
-    onSubmit?: (values: any) => void;
+    onSubmit?: (values: any, formikHelpers: FormikHelpers<any>) => void | Promise<any>;
     fields: FormField[];
     validationSchema?: any;
-    formRef?: any;
+    formRef?: RefObject<FormikProps<any>>;
     hideSubmitButton?: boolean;
     defaultCol?: number;
+    submitButtonProps?: ButtonProps;
 }
 
 export const Form: FC<FormProps> = ({
@@ -23,9 +24,8 @@ export const Form: FC<FormProps> = ({
     formRef,
     hideSubmitButton = false,
     defaultCol = 6,
+    submitButtonProps,
 }) => {
-    let formatter = useDateFormatter({dateStyle: "full"});
-
     const renderField = (field: FormField, form: any) => {
         const switchProps = {
             name: field.name,
@@ -46,7 +46,14 @@ export const Form: FC<FormProps> = ({
             endContent: field.endContent,
         };
 
-        const error = form.touched[field.name] && form.errors[field.name];
+        const getNestedValue = (obj: any, path: string) => {
+            return path.split('.').reduce((current, key) => {
+                return current?.[key];
+            }, obj);
+        };
+
+        const error = getNestedValue(form.errors, field.name);
+        const value = getNestedValue(form.values, field.name);
 
         switch (field.type) {
             case 'select':
@@ -55,15 +62,15 @@ export const Form: FC<FormProps> = ({
                         {({ field: formikField, meta }: any) => (
                             <Select
                                 {...commonProps}
-                                {...formikField}
                                 description={field.helperText}
-                                errorMessage={error}
+                                errorMessage={error || ""}
                                 isInvalid={!!error}
                                 items={field.options || []}
                                 selectionMode="single"
-                                selectedKeys={form.values[field.name] ? [form.values[field.name]] : []}
-                                onChange={(e) => form.setFieldValue(field.name, e.target.value)}
-                                onBlur={() => form.setFieldTouched(field.name, true)}
+                                selectedKeys={value ? [value] : []}
+                                onChange={(e) => {
+                                    form.setFieldValue(field.name, e.target.value);
+                                }}
                             >
                                 {(field.options || []).map((option: SelectOption) => (
                                     <SelectItem key={option.value} value={option.value}>
@@ -83,20 +90,21 @@ export const Form: FC<FormProps> = ({
                                 <div className="flex items-center gap-1">
                                     <Switch
                                         {...switchProps}
-                                        {...formikField}
-                                        description={field.helperText}
-                                        isSelected={form.values[field.name]}
-                                        onValueChange={(value) => form.setFieldValue(field.name, value)}
+                                        isSelected={value}
+                                        onValueChange={(val) => {
+                                            form.setFieldValue(field.name, val);
+                                        }}
                                         classNames={{
                                             base: error ? "border-danger" : ""
                                         }}
                                     >
                                         {field.label}
                                     </Switch>
-                                    {field.required && (
-                                        <span className="text-danger">*</span>
-                                    )}
+                                    {field.required && <span className="text-danger">*</span>}
                                 </div>
+                                {field.helperText && (
+                                    <div className="text-sm text-default-400">{field.helperText}</div>
+                                )}
                                 {error && (
                                     <div className="text-danger text-xs">{error}</div>
                                 )}
@@ -109,21 +117,22 @@ export const Form: FC<FormProps> = ({
                 return (
                     <Field name={field.name}>
                         {({ field: formikField, form, meta }: any) => (
-                             <I18nProvider locale="tr-TR">
-                            <DatePicker
-                                {...commonProps}
-                                onChange={(date) => form.setFieldValue(field.name, date)}
-                                value={formikField.value ? new CalendarDate(
-                                    formikField.value.year,
-                                    formikField.value.month,
-                                    formikField.value.day
-                                ) : null}
-                                description={field.helperText}
-                                errorMessage={error}
-                                isInvalid={!!error}
-                                placeholder={field.placeholder || "GG/AA/YYYY"}
-                                onBlur={() => form.setFieldTouched(field.name, true)}
-                            />
+                            <I18nProvider locale="tr-TR">
+                                <DatePicker
+                                    {...commonProps}
+                                    onChange={(date) => {
+                                        form.setFieldValue(field.name, date);
+                                    }}
+                                    value={formikField.value ? new CalendarDate(
+                                        formikField.value.year,
+                                        formikField.value.month,
+                                        formikField.value.day
+                                    ) : null}
+                                    description={field.helperText}
+                                    errorMessage={error || ""}
+                                    isInvalid={!!error}
+                                    placeholder={field.placeholder || "GG/AA/YYYY"}
+                                />
                             </I18nProvider>
                         )}
                     </Field>
@@ -137,11 +146,12 @@ export const Form: FC<FormProps> = ({
                                 {...commonProps}
                                 {...formikField}
                                 description={field.helperText}
-                                errorMessage={error}
+                                errorMessage={error || ""}
                                 isInvalid={!!error}
                                 value={form.values[field.name]}
-                                onChange={(e) => form.setFieldValue(field.name, e.target.value)}
-                                onBlur={() => form.setFieldTouched(field.name, true)}
+                                onChange={(e) => {
+                                    form.setFieldValue(field.name, e.target.value);
+                                }}
                             />
                         )}
                     </Field>
@@ -152,10 +162,15 @@ export const Form: FC<FormProps> = ({
                     <Field name={field.name}>
                         {({ field: formikField, meta }: any) => (
                             <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-1">
+                                    <span className="text-sm">{field.label}</span>
+                                    {field.required && <span className="text-danger">*</span>}
+                                </div>
                                 <input
                                     type="file"
                                     accept={field.accept}
                                     onChange={(event) => {
+                                        debugger
                                         const file = event.currentTarget.files?.[0];
                                         form.setFieldValue(field.name, file);
                                     }}
@@ -165,20 +180,15 @@ export const Form: FC<FormProps> = ({
                                 <Button
                                     as="label"
                                     htmlFor={field.name}
-                                    color="primary"
+                                    color={error ? "danger" : "primary"}
                                     variant="bordered"
                                     startContent={<span>📎</span>}
                                 >
-                                    Dosya Yükle
+                                    {formikField.value ? formikField.value.name : 'Dosya Yükle'}
                                 </Button>
-                                {formikField.value && (
-                                    <div className="text-sm">
-                                        {formikField.value.name}
-                                    </div>
-                                )}
-                                {meta.touched && meta.error && (
+                                {error && (
                                     <div className="text-danger text-sm">
-                                        {meta.error}
+                                        {error}
                                     </div>
                                 )}
                             </div>
@@ -189,17 +199,24 @@ export const Form: FC<FormProps> = ({
             default:
                 return (
                     <Field name={field.name}>
-                        {({ field: formikField, meta }: any) => (
+                        {({ field: formikField }: any) => (
                             <Input
                                 {...commonProps}
                                 {...formikField}
                                 type={field.type}
                                 description={field.helperText}
-                                errorMessage={error}
+                                errorMessage={error || ""}
+                                color={error ? "danger" : "default"}
                                 isInvalid={!!error}
-                                value={form.values[field.name]}
-                                onChange={(e) => form.setFieldValue(field.name, e.target.value)}
-                                onBlur={() => form.setFieldTouched(field.name, true)}
+                                value={value || ''}
+                                onChange={(e) => {
+                                    const newValue = field.type === 'number' 
+                                        ? e.target.value === '' 
+                                            ? '' 
+                                            : Number(e.target.value)
+                                        : e.target.value;
+                                    form.setFieldValue(field.name, newValue);
+                                }}
                             />
                         )}
                     </Field>
@@ -210,12 +227,24 @@ export const Form: FC<FormProps> = ({
     return (
         <Formik
             initialValues={initialValues}
-            onSubmit={onSubmit || (() => { })}
+            onSubmit={async (values, formikHelpers) => {
+                try {
+                    if (onSubmit) {
+                        await onSubmit(values, formikHelpers);
+                    }
+                } catch (error) {
+                    Object.keys(values).forEach(key => {
+                        formikHelpers.setFieldTouched(key, true, false);
+                    });
+                }
+            }}
             validationSchema={validationSchema}
+            validateOnChange={true}
             innerRef={formRef}
         >
-            {({ isSubmitting, values, errors, touched, setFieldValue, setFieldTouched }) => (
-                <FormikForm>
+            {({ isSubmitting, values, errors, touched, setFieldValue, setFieldTouched }) => { 
+                return(
+                <FormikForm noValidate>
                     <div className="grid grid-cols-12 gap-4">
                         {fields.map((field) => (
                             <div
@@ -226,12 +255,12 @@ export const Form: FC<FormProps> = ({
                                     'sm:col-span-9', 'sm:col-span-10', 'sm:col-span-11', 'sm:col-span-12'
                                 ][(field.col || defaultCol) - 1]}`}
                             >
-                                {renderField(field, { 
-                                    values, 
-                                    errors, 
+                                {renderField(field, {
+                                    values,
+                                    errors,
                                     touched,
                                     setFieldValue,
-                                    setFieldTouched 
+                                    setFieldTouched
                                 })}
                             </div>
                         ))}
@@ -243,13 +272,14 @@ export const Form: FC<FormProps> = ({
                                 color="primary"
                                 isLoading={isSubmitting}
                                 className="w-full"
+                                {...submitButtonProps}
                             >
-                                Gönder
+                                {submitButtonProps?.children || 'Gönder'}
                             </Button>
                         </div>
                     )}
                 </FormikForm>
-            )}
+            )}}
         </Formik>
     );
 }; 
