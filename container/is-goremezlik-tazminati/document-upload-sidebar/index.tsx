@@ -148,7 +148,7 @@ export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({
                                                         size="sm"
                                                         color="primary"
                                                         variant="light"
-                                                        onPress={() => window.open(URL.createObjectURL(doc.file))}
+                                                        onPress={() => window.open(URL.createObjectURL(doc.file as any))}
                                                     >
                                                         Görüntüle
                                                     </Button>

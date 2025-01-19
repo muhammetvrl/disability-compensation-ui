@@ -32,6 +32,13 @@ export interface Expense {
   file: string;
 }
 
+export interface Document {
+  documentType: string;
+  referenceNo: string;
+  date: string;
+  file: string;
+}
+
 const validationSchema = Yup.object().shape({
   claimant: Yup.object().shape({
     name: Yup.string().required('Ad zorunludur'),
@@ -94,7 +101,7 @@ export const IncapacityCompensationNew = () => {
   const form3Ref = useRef<FormikProps<any>>(null);
   const [isDocumentUploadOpen, setIsDocumentUploadOpen] = useState(false);
   const [isNonInvoicedExpenseOpen, setIsNonInvoicedExpenseOpen] = useState(false);
-  const [documents, setDocuments] = useState<IDocument[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   console.log("🚀 ~ IncapacityCompensationNew ~ expenses:", expenses)
 
@@ -382,12 +389,12 @@ export const IncapacityCompensationNew = () => {
         formData.append('Note', form3Ref.current?.values.note);
         
         // Claimant verileri
-        Object.entries(claimantData).forEach(([key, value]) => {
+        Object.entries(claimantData).forEach(([key, value]: [string, any]) => {
           formData.append(`Claimant.${key}`, value.toString());
         });
 
         // Event verileri
-        Object.entries(eventData).forEach(([key, value]) => {
+        Object.entries(eventData).forEach(([key, value]: [string, any]) => {
           formData.append(`Event.${key}`, value.toString());
         });
 
@@ -409,14 +416,14 @@ export const IncapacityCompensationNew = () => {
         });
 
         try {
-          const result = await compensationService.create(formData);
+          const result = await compensationService.create(formData as any);
 
           if (result.data) {
             router.push(`/is-goremezlik-tazminati/sonuc/${result.data}`);
           } else {
             // Hata mesajlarını detaylı bir şekilde göster
             if (result.ValidationErrors) {
-              result.ValidationErrors.forEach((error) => {
+              result.ValidationErrors.forEach((error: any) => {
                 toast.error(`${error.PropertyMessage}: ${error.ErrorMessage}`);
               });
             } else {

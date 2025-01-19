@@ -145,7 +145,7 @@ export const NonInvoicedExpenseDrawer: FC<NonInvoicedExpenseDrawerProps> = ({
                                                     size="sm"
                                                     color="primary"
                                                     variant="light"
-                                                    onPress={() => window.open(URL.createObjectURL(expense.file))}
+                                                    onPress={() => window.open(URL.createObjectURL(expense.file as any))}
                                                 >
                                                     Görüntüle
                                                 </Button>
