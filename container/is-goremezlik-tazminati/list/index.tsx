@@ -51,24 +51,6 @@ export const IncapacityCompensation = () => {
     setSelectedStatus(new Set([]));
   };
 
-  // DatePicker'dan gelen tarihi UTC'ye çeviren yardımcı fonksiyon
-  const convertToUTCDate = (date: DateValue | null) => {
-    if (!date) return null;
-    
-    // DateValue'yu JavaScript Date nesnesine çeviriyoruz
-    const localDate = new Date(date.toString());
-    
-    // Tarihi UTC'ye çeviriyoruz
-    return new Date(Date.UTC(
-      localDate.getFullYear(),
-      localDate.getMonth(),
-      localDate.getDate(),
-      localDate.getHours(),
-      localDate.getMinutes(),
-      localDate.getSeconds()
-    ));
-  };
-
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4">
       <Breadcrumbs radius={"sm"} variant="solid">
@@ -84,8 +66,7 @@ export const IncapacityCompensation = () => {
             <DatePicker
               value={filter.date}
               onChange={(value) => {
-                const utcDate = convertToUTCDate(value);
-                setFilter({ ...filter, date: utcDate as DateValue | null });
+                setFilter({ ...filter, date: value });
               }}
               className="w-[200px]"
               label="Tazminat Tarihi"
