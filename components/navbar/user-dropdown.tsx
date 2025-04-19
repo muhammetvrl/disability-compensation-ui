@@ -1,3 +1,4 @@
+"use client";
 import {
   Avatar,
   Dropdown,
@@ -7,17 +8,28 @@ import {
   Navbar,
   NavbarItem,
 } from "@nextui-org/react";
-import React, { useCallback } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { DarkModeSwitch } from "./darkmodeswitch";
 import { useRouter } from "next/navigation";
 import { deleteAuthCookie } from "@/actions/auth.action";
 
 export const UserDropdown = () => {
   const router = useRouter();
+  const [userEmail, setUserEmail] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      setUserEmail(user?.email || "");
+    }
+  }, []);
 
   const handleLogout = useCallback(async () => {
-    await deleteAuthCookie();
-    router.replace("/login");
+    if (typeof window !== 'undefined') {
+      await deleteAuthCookie();
+      await localStorage.removeItem("user");
+      router.replace("/login");
+    }
   }, [router]);
 
   return (
@@ -34,19 +46,18 @@ export const UserDropdown = () => {
       </NavbarItem>
       <DropdownMenu
         aria-label='User menu actions'
-        onAction={(actionKey) => console.log({ actionKey })}>
+        onAction={(actionKey) => {
+          if (actionKey === "settings") {
+            router.replace("/settings");
+          }
+        }}>
         <DropdownItem
           key='profile'
           className='flex flex-col justify-start w-full items-start'>
           <p>Signed in as</p>
-          <p>zoey@example.com</p>
+          <p>{userEmail}</p>
         </DropdownItem>
         <DropdownItem key='settings'>My Settings</DropdownItem>
-        <DropdownItem key='team_settings'>Team Settings</DropdownItem>
-        <DropdownItem key='analytics'>Analytics</DropdownItem>
-        <DropdownItem key='system'>System</DropdownItem>
-        <DropdownItem key='configurations'>Configurations</DropdownItem>
-        <DropdownItem key='help_and_feedback'>Help & Feedback</DropdownItem>
         <DropdownItem
           key='logout'
           color='danger'

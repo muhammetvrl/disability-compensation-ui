@@ -3,7 +3,8 @@ export const ROUTES = {
   IS_GOREMEZLIK: {
     LIST: '/is-goremezlik-tazminati',
     NEW: '/is-goremezlik-tazminati/yeni-hesaplama',
-    DETAIL: (id: string) => `/is-goremezlik-tazminati/${id}`,
+    DETAIL: (id: string) => `/is-goremezlik-tazminati/sonuc/${id}`,
+
   },
   DESTEK_YOKSUN_KALMA_TAZMINATI: {
     LIST: '/destekten-yoksun-kalma-tazminati/liste',

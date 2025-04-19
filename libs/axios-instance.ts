@@ -53,6 +53,11 @@ export function createAxiosInstance(): AxiosInstance {
 
       // API hatalarını özelleştirilmiş hata sınıfına dönüştür
       if (response) {
+        
+        if(response.status === 401) {
+          window.location.href = '/login'
+        }
+
         throw new ApiError(
           response.status,
           (response.data as any)?.message || 'Bir hata oluştu',

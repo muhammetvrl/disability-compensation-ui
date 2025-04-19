@@ -4,7 +4,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, 
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
 import { FormField } from '@/components/form/types'
-import { formatDateString } from '@/utils/formatDate';
+import { formatDateString, formatDateToUTC } from '@/utils/formatDate';
 import { Trash2 } from "lucide-react";
 import { FormikHelpers } from 'formik';
 import { Document } from '../action';
@@ -81,7 +81,7 @@ export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({
             const document: Document = {
                 documentType: values.documentType,
                 referenceNo: values.referenceNo,
-                date: values.date,
+                date: formatDateToUTC(values.date) || '',
                 file: values.file
             };
             setDocuments([...documents, document]);

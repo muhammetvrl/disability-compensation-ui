@@ -1,3 +1,5 @@
+"use client";
+
 import { Input, Link, Navbar, NavbarContent } from "@nextui-org/react";
 import React from "react";
 import { FeedbackIcon } from "../icons/navbar/feedback-icon";

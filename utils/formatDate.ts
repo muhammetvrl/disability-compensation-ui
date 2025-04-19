@@ -19,3 +19,17 @@ export const formatDateString = (date: string) => {
 
   return parsedDate.toLocaleString('tr-TR', options);
 };
+
+export const formatDateToUTC = (date: string) => {
+  if (!date) return null;
+  
+  const localDate = new Date(date);
+  return new Date(
+    Date.UTC(
+      localDate.getFullYear(),
+      localDate.getMonth(),
+      localDate.getDate(),
+      0, 0, 0
+    )
+  ).toISOString();
+};

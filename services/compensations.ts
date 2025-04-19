@@ -1,5 +1,6 @@
 import { Expense } from '@/container/is-goremezlik-tazminati/action';
 import { api } from '@/libs/axios-instance';
+import { DateValue } from '@nextui-org/react';
 
 interface IClaimant {
   name: string;
@@ -50,9 +51,9 @@ const createCompensation = async (payload: ICompensationRequest): Promise<any> =
   }
 };
 
-const getCompensatios = async (): Promise<any> => {
+const getCompensations = async (filter: { page: number, pageSize: number, date: DateValue | null, status: number | null | undefined }): Promise<any> => {
   try {
-    const response = await api.get('/compensations', {params: {page: 1, pageSize: 10}});
+    const response = await api.get('/compensations', { params: filter });
     return response.data;
   } catch (error) {
     throw error;
@@ -68,9 +69,39 @@ const getCompensatiosDetail = async (id: string): Promise<any> => {
   }
 };
 
+const rejectCompensation = async (id: string, payload: {
+  id: string,
+  rejectReason: string
+}): Promise<any> => {
+  try {
+    const response = await api.patch(`/compensations/${id}/reject`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+const approveCompensation = async (id: string, payload: {
+  id: string,
+  disabilityRate: number,
+  hasTemporaryDisability: boolean,
+  hasCaregiver: boolean,
+  temporaryDisabilityDay: number
+}): Promise<any> => {
+  try {
+    const response = await api.patch(`/compensations/${id}/approve`, payload);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const compensationService = {
   create: createCompensation,
-  list: getCompensatios,
+  list: getCompensations,
   detail: getCompensatiosDetail,
+  reject: rejectCompensation,
+  approve: approveCompensation,
 };
 

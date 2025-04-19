@@ -4,7 +4,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, 
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
 import { FormField } from '@/components/form/types';
-import { formatDate, formatDateString } from '@/utils/formatDate';
+import { formatDateString, formatDateToUTC } from '@/utils/formatDate';
 import { Trash2 } from "lucide-react";
 import { Expense } from '../action';
 
@@ -88,7 +88,7 @@ export const NonInvoicedExpenseDrawer: FC<NonInvoicedExpenseDrawerProps> = ({
     const handleSubmit = async (values: any) => {
         const expense: Expense = {
            ...values,
-           date: formatDate(values.date)
+           date: formatDateToUTC(values.date)
         };
         setExpenses([...expenses, expense]);
         formRef.current?.resetForm({ values: initialValues });

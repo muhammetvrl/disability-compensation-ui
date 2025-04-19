@@ -3,6 +3,8 @@ import React from "react";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
 import { EditIcon } from "@/components/icons/table/edit-icon";
 import { formatDateString } from "@/utils/formatDate";
+import { ROUTES } from "@/helpers/urls";
+import Link from "next/link";
 
 enum CompensationStatus {
   None = 0,
@@ -46,20 +48,20 @@ const getNestedValue = (obj: any, path: string) => {
 };
 
 interface Props {
-  user: any;
+  rowData: any;
   columnKey: string | React.Key;
 }
 
-export const RenderCell = ({ user, columnKey }: Props) => {
+export const RenderCell = ({ rowData, columnKey }: Props) => {
   // @ts-ignore
   const cellValue = typeof columnKey === 'string' 
-    ? getNestedValue(user, columnKey)
-    : user[columnKey];
+    ? getNestedValue(rowData, columnKey)
+    : rowData[columnKey];
     
   switch (columnKey) {
     case "claimant.name":
       return (
-        <span>{cellValue} {user.claimant.surname}</span>
+        <span>{cellValue} {rowData.claimant.surname}</span>
       );
     case "createdDate":
       return (
@@ -80,16 +82,16 @@ export const RenderCell = ({ user, columnKey }: Props) => {
         <div className="flex items-center gap-4 ">
           <div>
             <Tooltip content="Düzenle" color="secondary">
-              <button onClick={() => console.log("Edit user", user.id)}>
+              <Link href={ROUTES.IS_GOREMEZLIK.DETAIL(rowData.id)}>
                 <EditIcon size={20} fill="#979797" />
-              </button>
+              </Link>
             </Tooltip>
           </div>
           <div>
             <Tooltip
               content="Sil"
               color="danger"
-              onClick={() => console.log("Delete user", user.id)}
+              onClick={() => console.log("Delete user", rowData.id)}
             >
               <button>
                 <DeleteIcon size={20} fill="#FF0080" />

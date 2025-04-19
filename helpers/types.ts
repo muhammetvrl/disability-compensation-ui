@@ -12,6 +12,23 @@ export type RegisterFormType = {
   confirmPassword: string;
 };
 
+export type ProfileFormType = {
+  id: string;
+  email: string;
+  name: string;
+  surname: string;
+  password?: string;
+  confirmPassword?: string;
+};
+
+export type IncapacityApprovalForm = {
+  id: string;
+  disabilityRate: string;
+  hasTemporaryDisability: boolean;
+  hasCaregiver: boolean;
+  temporaryDisabilityDay: string;
+};
+
 export interface ClaimRecord {
   fileNo: string;
   fullName: string; 

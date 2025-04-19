@@ -9,10 +9,11 @@ import { DocumentUploadSidebar } from "../document-upload-sidebar";
 import { NonInvoicedExpenseDrawer } from "../non-invoiced-expense-drawer";
 import { useRouter } from "next/navigation";
 import { compensationService, ICompensationRequest, IDocument } from "@/services/compensations";
-import { CalendarDate } from '@internationalized/date';
 import { useFetch } from "@/hooks/use-fetch";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { format } from "date-fns";
+import { formatDateToUTC } from "@/utils/formatDate";
 
 interface IParameterValue {
   name: string;
@@ -40,50 +41,50 @@ export interface Document {
 }
 
 const validationSchema = Yup.object().shape({
-  claimant: Yup.object().shape({
-    name: Yup.string().required('Ad zorunludur'),
-    surname: Yup.string().required('Soyad zorunludur'),
-    birthDate: Yup.date().required('Doğum tarihi zorunludur'),
-    tckn: Yup.string()
+  Claimant: Yup.object().shape({
+    Name: Yup.string().required('Ad zorunludur'),
+    Surname: Yup.string().required('Soyad zorunludur'),
+    BirthDate: Yup.date().required('Doğum tarihi zorunludur'),
+    TCKN: Yup.string()
       .required('TCKN zorunludur')
       .matches(/^[0-9]{11}$/, 'TCKN 11 haneli olmalıdır'),
-    gender: Yup.string().required('Cinsiyet seçimi zorunludur'),
-    maritalStatus: Yup.string().required('Medeni hal seçimi zorunludur'),
-    militaryStatus: Yup.string().required('Askerlik durumu seçimi zorunludur'),
-    fatherName: Yup.string().required('Baba adı zorunludur'),
-    employmentStatus: Yup.string().required('Çalışma durumu seçimi zorunludur'),
-    monthlyIncome: Yup.number()
+    Gender: Yup.string().required('Cinsiyet seçimi zorunludur'),
+    MaritalStatus: Yup.string().required('Medeni hal seçimi zorunludur'),
+    MilitaryStatus: Yup.string().required('Askerlik durumu seçimi zorunludur'),
+    FatherName: Yup.string().required('Baba adı zorunludur'),
+    EmploymentStatus: Yup.string().required('Çalışma durumu seçimi zorunludur'),
+    MonthlyIncome: Yup.number()
       .required('Aylık gelir zorunludur')
       .min(0, 'Gelir 0\'dan küçük olamaz'),
-    isMinimumWage: Yup.boolean(),
+    IsMinimumWage: Yup.boolean(),
   }),
 });
 
 
 // Validation şeması
 const validationSchema2 = Yup.object().shape({
-  event: Yup.object().shape({
-    eventType: Yup.string().required('Olay türü seçimi zorunludur'),
-    eventDate: Yup.date().required('Olay tarihi zorunludur'),
-    examinationDate: Yup.date()
+  Event: Yup.object().shape({
+    EventType: Yup.string().required('Olay türü seçimi zorunludur'),
+    EventDate: Yup.date().required('Olay tarihi zorunludur'),
+    ExaminationDate: Yup.date()
       .required('Muayene tarihi zorunludur')
-      .min(Yup.ref('eventDate'), 'Muayene tarihi olay tarihinden önce olamaz'),
-    lifeStatus: Yup.string().required('Durum seçimi zorunludur'),
-    court: Yup.string().required('Mahkeme seçimi zorunludur'),
-    faultRate: Yup.number()
+      .min(Yup.ref('EventDate'), 'Muayene tarihi olay tarihinden önce olamaz'),
+    LifeStatus: Yup.string().required('Durum seçimi zorunludur'),
+
+    FaultRate: Yup.number()
       .required('Kusur oranı zorunludur')
       .min(0, 'Kusur oranı 0\'dan küçük olamaz')
       .max(100, 'Kusur oranı 100\'den büyük olamaz'),
-    disabilityRate: Yup.number()
+    DisabilityRate: Yup.number()
       .required('Maluliyet oranı zorunludur')
       .min(0, 'Maluliyet oranı 0\'dan küçük olamaz')
       .max(100, 'Maluliyet oranı 100\'den büyük olamaz'),
-    sgkAdvanceCapital: Yup.number()
+    SgkAdvanceCapital: Yup.number()
       .required('SGK peşin sermaye değeri zorunludur')
       .min(0, 'SGK peşin sermaye değeri 0\'dan küçük olamaz'),
-    lifeTable: Yup.string().required('Yaşam tablosu seçimi zorunludur'),
-    isFavorTransportDiscount: Yup.boolean(),
-    isMutualFaultDiscount: Yup.boolean(),
+    LifeTable: Yup.string().required('Yaşam tablosu seçimi zorunludur'),
+    IsFavorTransportDiscount: Yup.boolean(),
+    IsMutualFaultDiscount: Yup.boolean(),
   }),
 });
 
@@ -103,7 +104,6 @@ export const IncapacityCompensationNew = () => {
   const [isNonInvoicedExpenseOpen, setIsNonInvoicedExpenseOpen] = useState(false);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  console.log("🚀 ~ IncapacityCompensationNew ~ expenses:", expenses)
 
   const { data: genders } = useFetch<IParameter[]>('/parameters/search', {
     method: 'POST',
@@ -170,27 +170,27 @@ export const IncapacityCompensationNew = () => {
 
   const fields = [
     {
-      name: 'claimant.name',
+      name: 'Claimant.Name',
       label: 'Adı',
       type: 'text' as const,
       required: true,
       placeholder: 'Adınızı giriniz',
     },
     {
-      name: 'claimant.surname',
+      name: 'Claimant.Surname',
       label: 'Soyadı',
       type: 'text' as const,
       required: true,
       placeholder: 'Soyadınızı giriniz',
     },
     {
-      name: 'claimant.birthDate',
+      name: 'Claimant.BirthDate',
       label: 'Doğum Tarihi',
       type: 'date' as const,
       required: true,
     },
     {
-      name: 'claimant.tckn',
+      name: 'Claimant.TCKN',
       label: 'TCKN',
       type: 'text' as const,
       required: true,
@@ -198,50 +198,50 @@ export const IncapacityCompensationNew = () => {
       maxLength: 11,
     },
     {
-      name: 'claimant.gender',
+      name: 'Claimant.Gender',
       label: 'Cinsiyeti',
       type: 'select' as const,
       required: true,
       options: genders?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'claimant.maritalStatus',
+      name: 'Claimant.MaritalStatus',
       label: 'Medeni Hali',
       type: 'select' as const,
       required: true,
       options: maritalStatus?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'claimant.militaryStatus',
+      name: 'Claimant.MilitaryStatus',
       label: 'Askerlik Durumu',
-      disabled: form1Ref.current?.values.claimant.gender === 'female',
+      disabled: form1Ref.current?.values.Claimant?.Gender === 'female',
       type: 'select' as const,
       required: true,
       options: militaryStatus?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'claimant.fatherName',
+      name: 'Claimant.FatherName',
       label: 'Baba Adı',
       type: 'text' as const,
       required: true,
       placeholder: 'Baba adını giriniz',
     },
     {
-      name: 'claimant.employmentStatus',
+      name: 'Claimant.EmploymentStatus',
       label: 'Çalışma Durumu',
       type: 'select' as const,
       required: true,
       options: employmentStatus?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'claimant.monthlyIncome',
+      name: 'Claimant.MonthlyIncome',
       label: 'Aylık Net Gelir',
       type: 'number' as const,
       required: true,
       placeholder: '0',
     },
     {
-      name: 'claimant.isMinimumWage',
+      name: 'Claimant.IsMinimumWage',
       label: 'Asgari Ücret Tarifesi',
       type: 'switch' as const,
     },
@@ -249,40 +249,40 @@ export const IncapacityCompensationNew = () => {
 
   const eventFields = [
     {
-      name: 'event.eventType',
+      name: 'Event.EventType',
       label: 'Olay Türü',
       type: 'select' as const,
       required: true,
       options: eventTypes?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'event.eventDate',
+      name: 'Event.EventDate',
       label: 'Olay Tarihi',
       type: 'date' as const,
       required: true,
     },
     {
-      name: 'event.examinationDate',
+      name: 'Event.ExaminationDate',
       label: 'Muayene Tarihi',
       type: 'date' as const,
       required: true,
     },
     {
-      name: 'event.lifeStatus',
+      name: 'Event.LifeStatus',
       label: 'Durum',
       type: 'select' as const,
       required: true,
       options: lifeStatus?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'event.court',
+      name: 'Event.Court',
       label: 'Mahkeme',
       type: 'select' as const,
       required: true,
       options: courts?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'event.faultRate',
+      name: 'Event.FaultRate',
       label: 'Kusur Oranı',
       type: 'number' as const,
       required: true,
@@ -290,7 +290,7 @@ export const IncapacityCompensationNew = () => {
       endContent: '%',
     },
     {
-      name: 'event.disabilityRate',
+      name: 'Event.DisabilityRate',
       label: 'Maluliyet Oranı',
       type: 'number' as const,
       required: true,
@@ -298,7 +298,7 @@ export const IncapacityCompensationNew = () => {
       endContent: '%',
     },
     {
-      name: 'event.sgkAdvanceCapital',
+      name: 'Event.SgkAdvanceCapital',
       label: 'SGK Peşin Sermaye Değeri',
       type: 'number' as const,
       required: true,
@@ -306,20 +306,20 @@ export const IncapacityCompensationNew = () => {
       endContent: '₺',
     },
     {
-      name: 'event.lifeTable',
+      name: 'Event.LifeTable',
       label: 'Yaşam Tablosu',
       type: 'select' as const,
       required: true,
       options: lifeTables?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'event.isFavorTransportDiscount',
+      name: 'Event.IsFavorTransportDiscount',
       label: 'Hatır Taşıması İndirimi',
       type: 'switch' as const,
       col: 6,
     },
     {
-      name: 'event.isMutualFaultDiscount',
+      name: 'Event.IsMutualFaultDiscount',
       label: 'Müterafik Kusur İndirimi',
       type: 'switch' as const,
       col: 6,
@@ -328,19 +328,21 @@ export const IncapacityCompensationNew = () => {
 
   const fields3 = [
     {
-      name: 'predefinedNote',
+      name: 'PredefinedNote',
       label: 'Hazır Notlar',
       type: 'select' as const,
       options: predefinedNotes?.[0]?.values.map((item) => ({ label: item.name, value: item.value }))
     },
     {
-      name: 'note',
+      name: 'Note',
       label: 'Notlar',
       type: 'textarea' as const,
       placeholder: 'Notlarınızı buraya yazınız...',
       rows: 4,
     },
   ];
+
+
 
   const handleSubmit = async () => {
     try {
@@ -359,35 +361,23 @@ export const IncapacityCompensationNew = () => {
         Object.keys(isForm2Valid || {}).length === 0 &&
         Object.keys(isForm3Valid || {}).length === 0
       ) {
-        const formatDateToUTC = (date: string) => {
-          const localDate = new Date(date);
-          return new Date(
-            Date.UTC(
-              localDate.getFullYear(),
-              localDate.getMonth(),
-              localDate.getDate(),
-              0, 0, 0
-            )
-          ).toISOString();
-        };
-
         const claimantData = {
-          ...form1Ref.current?.values.claimant,
-          birthDate: formatDateToUTC(form1Ref.current?.values.claimant.birthDate)
+          ...form1Ref.current?.values.Claimant,
+          BirthDate: format(new Date(form1Ref.current?.values.Claimant.BirthDate), 'yyyy-MM-dd')
         };
 
         const eventData = {
-          ...form2Ref.current?.values.event,
-          eventDate: formatDateToUTC(form2Ref.current?.values.event.eventDate),
-          examinationDate: formatDateToUTC(form2Ref.current?.values.event.examinationDate)
+          ...form2Ref.current?.values.Event,
+          EventDate: formatDateToUTC(form2Ref.current?.values.Event.EventDate),
+          ExaminationDate: formatDateToUTC(form2Ref.current?.values.Event.ExaminationDate)
         };
 
         const formData = new FormData();
-        
+
         // Ana form verileri
-        formData.append('PredefinedNote', form3Ref.current?.values.predefinedNote);
-        formData.append('Note', form3Ref.current?.values.note);
-        
+        formData.append('PredefinedNote', form3Ref.current?.values.PredefinedNote);
+        formData.append('Note', form3Ref.current?.values.Note);
+
         // Claimant verileri
         Object.entries(claimantData).forEach(([key, value]: [string, any]) => {
           formData.append(`Claimant.${key}`, value.toString());
@@ -455,18 +445,18 @@ export const IncapacityCompensationNew = () => {
           <Form
             formRef={form1Ref}
             initialValues={{
-              claimant: {
-                 firstName: '',
-              lastName: '',
-              birthDate: '',
-              tckn: '',
-              gender: '',
-              maritalStatus: '',
-              militaryStatus: '',
-              fatherName: '',
-              employmentStatus: '',
-              monthlyIncome: 0,
-              isMinimumWage: false,
+              Claimant: {
+                Name: '',
+                Surname: '',
+                BirthDate: '',
+                TCKN: '',
+                Gender: '',
+                MaritalStatus: '',
+                MilitaryStatus: '',
+                FatherName: '',
+                EmploymentStatus: '',
+                MonthlyIncome: 0,
+                IsMinimumWage: false,
               }
             }}
             fields={fields}
@@ -479,18 +469,18 @@ export const IncapacityCompensationNew = () => {
           <Form
             formRef={form2Ref}
             initialValues={{
-              event: {
-                eventType: '',
-                eventDate: '',
-                examinationDate: '',
-                status: '',
-                court: '',
-                faultRate: 0,
-                disabilityRate: 0,
-                sgkCapitalValue: 0,
-                lifeTable: '',
-                hasHatirTasimasi: false,
-                hasMuterafikKusur: false,
+              Event: {
+                EventType: '',
+                EventDate: '',
+                ExaminationDate: '',
+                Status: '',
+                Court: 1,
+                FaultRate: 0,
+                DisabilityRate: 0,
+                SgkCapitalValue: 0,
+                LifeTable: '',
+                IsFavorTransportDiscount: false,
+                IsMutualFaultDiscount: false,
               }
             }}
             fields={eventFields}
@@ -503,8 +493,8 @@ export const IncapacityCompensationNew = () => {
           <Form
             formRef={form3Ref}
             initialValues={{
-              predefinedNote: 'note1',
-              note: 'Bu bir örnek nottur.',
+              PredefinedNote: '',
+              Note: '',
             }}
             fields={fields3}
             validationSchema={validationSchema3}

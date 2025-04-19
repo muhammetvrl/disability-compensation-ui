@@ -24,6 +24,7 @@ export const Login = () => {
         const { data } = await authService.login(values);
         if (data.token) {
           await createAuthCookie(data.token);
+          await localStorage.setItem("user", JSON.stringify(data.user));
           router.replace("/");
         }
       } catch (error) {
