@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { TableWrapper } from "@/components/table/table";
-import { Button, Tooltip } from "@nextui-org/react";
+import { Button, Tooltip } from "@heroui/react";
 import Link from "next/link";
 import { EyeIcon } from "lucide-react";
 import { formatDateString } from "@/utils/formatDate";

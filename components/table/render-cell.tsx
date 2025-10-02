@@ -1,4 +1,4 @@
-import { User, Tooltip, Chip } from "@nextui-org/react";
+import { User, Tooltip, Chip } from "@heroui/react";
 import React from "react";
 import { DeleteIcon } from "../icons/table/delete-icon";
 import { EditIcon } from "../icons/table/edit-icon";
@@ -37,19 +37,20 @@ export const RenderCell = ({ user, columnKey }: Props) => {
         </div>
       );
     case "status":
+      const getStatusClass = (status: string) => {
+        switch (status) {
+          case "active":
+            return "bg-green-100 text-green-800";
+          case "paused":
+            return "bg-red-100 text-red-800";
+          default:
+            return "bg-yellow-100 text-yellow-800";
+        }
+      };
+      
       return (
-        <Chip
-          size="sm"
-          variant="flat"
-          color={
-            cellValue === "active"
-              ? "success"
-              : cellValue === "paused"
-              ? "danger"
-              : "warning"
-          }
-        >
-          <span className="capitalize text-xs">{cellValue}</span>
+        <Chip className={`text-xs ${getStatusClass(cellValue)}`}>
+          <span className="capitalize">{cellValue}</span>
         </Chip>
       );
 

@@ -3,7 +3,7 @@
 import { ProfileSchema } from "@/helpers/schemas";
 import { ProfileFormType } from "@/helpers/types";
 import { authService } from "@/services/auth";
-import { Button, Card, CardBody, CardFooter, CardHeader, Divider, Input } from "@nextui-org/react";
+import { Button, Card, CardBody, CardFooter, CardHeader, Divider, Input } from "@heroui/react";
 import { Formik } from "formik";
 import { useCallback, useEffect, useState } from "react";
 

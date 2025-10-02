@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-no-comment-textnodes */
 "use client";
 import React, { useRef } from "react";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { useReactToPrint } from 'react-to-print';
 import { PrinterIcon } from "lucide-react";
 import { TableWrapper } from "@/components/table/table";

@@ -1,46 +1,48 @@
-# Base image
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
-# Çalışma dizinini ayarla
 WORKDIR /app
 
-# Package manager olarak yarn kullanıyoruz
-RUN corepack enable && corepack prepare yarn@stable --activate
+RUN apk add --no-cache python3 make g++
 
-# Package.json dosyalarını kopyala
-COPY package.json yarn.lock ./
-COPY apps/web/package.json ./apps/web/package.json
-COPY packages/*/package.json ./packages/
+RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install
 
-# Bağımlılıkları yükle
-RUN yarn install --frozen-lockfile
-
-# Kaynak kodları kopyala
 COPY . .
 
-# Production build
-RUN yarn build
+# Copy production environment file as .env
+COPY .env.production .env
 
-# Production image
-FROM node:18-alpine AS runner
+
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
+
+RUN pnpm run build
+
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# Package manager
-RUN corepack enable && corepack prepare yarn@stable --activate
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Sadece gerekli dosyaları kopyala
-COPY --from=builder /app/package.json .
-COPY --from=builder /app/yarn.lock .
-COPY --from=builder /app/apps/web/package.json ./apps/web/
-COPY --from=builder /app/apps/web/.next ./apps/web/.next
-COPY --from=builder /app/apps/web/public ./apps/web/public
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/public ./public
 
-# Production modunda çalıştır
+# Copy the standalone server and static files
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Copy package.json for dependencies
+COPY --from=builder /app/package.json ./package.json
+
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV NODE_ENV=$NODE_ENV
 
 EXPOSE 3000
 
-CMD ["yarn", "start"] 
+CMD ["node", "server.js"]
+

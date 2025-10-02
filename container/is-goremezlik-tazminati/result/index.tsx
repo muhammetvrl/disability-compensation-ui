@@ -1,5 +1,5 @@
 "use client";
-import { Breadcrumbs, BreadcrumbItem, Tabs, Tab, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Switch, Textarea } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Tabs, Tab, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Switch, Textarea } from "@heroui/react";
 import React, { useCallback, useState } from "react";
 import { IncapacityApprovalForm } from "@/helpers/types";
 import { Formik } from "formik";
@@ -153,7 +153,7 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     <Switch
                       name="hasTemporaryDisability"
                       isSelected={values.hasTemporaryDisability}
-                      onValueChange={(checked) => setFieldValue("hasTemporaryDisability", checked)}
+                      onValueChange={(checked:boolean) => setFieldValue("hasTemporaryDisability", checked)}
                       size="lg"
                       className="w-full"
                     >
@@ -162,7 +162,7 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     <Switch
                       name="hasCaregiver"
                       isSelected={values.hasCaregiver}
-                      onValueChange={(checked) => setFieldValue("hasCaregiver", checked)}
+                      onValueChange={(checked:boolean) => setFieldValue("hasCaregiver", checked)}
                       size="lg"
                       className="w-full"
                     >

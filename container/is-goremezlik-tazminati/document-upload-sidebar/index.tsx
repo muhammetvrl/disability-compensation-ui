@@ -1,6 +1,6 @@
 "use client";
 import { FC, useRef } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, CalendarDate } from "@nextui-org/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, CalendarDate } from "@heroui/react";
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
 import { FormField } from '@/components/form/types'
@@ -8,6 +8,7 @@ import { formatDateString, formatDateToUTC } from '@/utils/formatDate';
 import { Trash2 } from "lucide-react";
 import { FormikHelpers } from 'formik';
 import { Document } from '../action';
+import { useFetch } from '@/hooks/use-fetch';
 
 
 interface DocumentUploadSidebarProps {
@@ -16,6 +17,31 @@ interface DocumentUploadSidebarProps {
     documents: Document[];
     setDocuments: (documents: Document[]) => void;
 }
+
+
+export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({
+    isOpen,
+    onClose,
+    documents,
+    setDocuments
+}) => {
+    const formRef = useRef<any>(null);
+    const { data: documentTypes } = useFetch<any[]>('/parameters/search', {
+        method: 'POST',
+        data: {
+            codes: ['document_type']
+        }
+    });
+
+
+    
+    const initialValues = {
+        documentType: '',
+        referenceNo: '',
+        date: '',
+        file: null
+    };
+
 
 const validationSchema = Yup.object().shape({
     documentType: Yup.string().required('Evrak tipi zorunludur'),
@@ -30,11 +56,10 @@ const fields = [
         label: 'Evrak Tipi',
         type: 'select' as const,
         required: true,
-        options: [
-            { label: 'Muayene Raporu', value: 'examination_report' },
-            { label: 'Mahkeme Kararı', value: 'court_decision' },
-            { label: 'SGK Belgesi', value: 'sgk_document' },
-        ],
+        options: documentTypes?.map((type) => ({
+            label: type.name,
+            value: type.code
+        })),
         col: 12
     },
     {
@@ -60,21 +85,6 @@ const fields = [
         col: 12
     }
 ];
-
-export const DocumentUploadSidebar: FC<DocumentUploadSidebarProps> = ({
-    isOpen,
-    onClose,
-    documents,
-    setDocuments
-}) => {
-    const formRef = useRef<any>(null);
-    
-    const initialValues = {
-        documentType: '',
-        referenceNo: '',
-        date: '',
-        file: null
-    };
 
     const handleSubmit = async (values: any, formikHelpers: FormikHelpers<any>) => {
         try {

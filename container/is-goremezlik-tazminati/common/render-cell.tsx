@@ -1,4 +1,4 @@
-import { User, Tooltip, Chip } from "@nextui-org/react";
+import { Tooltip, Chip } from "@heroui/react";
 import React from "react";
 import { DeleteIcon } from "@/components/icons/table/delete-icon";
 import { EditIcon } from "@/components/icons/table/edit-icon";
@@ -13,18 +13,18 @@ enum CompensationStatus {
   Reject = 3
 }
 
-const getStatusColor = (status: CompensationStatus) => {
+const getStatusClass = (status: CompensationStatus) => {
   switch (status) {
     case CompensationStatus.None:
-      return "default";
+      return "bg-gray-100 text-gray-800";
     case CompensationStatus.Pending:
-      return "warning";
+      return "bg-yellow-100 text-yellow-800";
     case CompensationStatus.Approve:
-      return "success";
+      return "bg-green-100 text-green-800";
     case CompensationStatus.Reject:
-      return "danger";
+      return "bg-red-100 text-red-800";
     default:
-      return "default";
+      return "bg-gray-100 text-gray-800";
   }
 };
 
@@ -69,12 +69,8 @@ export const RenderCell = ({ rowData, columnKey }: Props) => {
       );
     case "status":
       return (
-        <Chip
-          size="sm"
-          variant="flat"
-          color={getStatusColor(cellValue)}
-        >
-          <span className="capitalize text-xs">{getStatusText(cellValue)}</span>
+        <Chip className={`text-xs ${getStatusClass(cellValue)}`}>
+          <span className="capitalize">{getStatusText(cellValue)}</span>
         </Chip>
       );
     case "actions":

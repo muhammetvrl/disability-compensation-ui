@@ -5,7 +5,7 @@ import {
   DropdownMenu,
   DropdownSection,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import React, { useState } from "react";
 import { AcmeIcon } from "../icons/acme-icon";
 import { AcmeLogo } from "../icons/acmelogo";
@@ -44,7 +44,7 @@ export const CompaniesDropdown = () => {
         </div>
       </DropdownTrigger>
       <DropdownMenu
-        onAction={(e) => {
+        onAction={(e:any) => {
           if (e === "1") {
             setCompany({
               name: "Facebook",

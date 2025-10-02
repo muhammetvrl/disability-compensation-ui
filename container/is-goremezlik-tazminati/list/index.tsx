@@ -1,6 +1,6 @@
 "use client";
-import { Button, DatePicker, Link, Select, SelectItem } from "@nextui-org/react";
-import { Breadcrumbs, BreadcrumbItem } from "@nextui-org/react";
+import { Button, DatePicker, Link, Select, SelectItem } from "@heroui/react";
+import { Breadcrumbs, BreadcrumbItem } from "@heroui/react";
 import React, { useEffect, useState } from "react";
 import { ExportIcon } from "@/components/icons/accounts/export-icon";
 import { TableWrapper } from "@/components/table/table";
@@ -13,9 +13,16 @@ import { SearchXIcon } from "lucide-react";
 import { I18nProvider } from "@react-aria/i18n";
 
 export const IncapacityCompensation = () => {
-  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(new Set([]));
-  
-  const [filter, setFilter] = useState<{ date: DateValue | null, status: number | null, page: number, pageSize: number }>({
+  const [selectedStatus, setSelectedStatus] = useState<Set<string>>(
+    new Set([])
+  );
+
+  const [filter, setFilter] = useState<{
+    date: DateValue | null;
+    status: number | null;
+    page: number;
+    pageSize: number;
+  }>({
     date: null,
     status: null,
     page: 1,
@@ -32,9 +39,9 @@ export const IncapacityCompensation = () => {
   const [compensations, setCompensations] = useState([]);
 
   useEffect(() => {
-    console.log(filter)
+    console.log(filter);
     const fetchData = async () => {
-      const res = await compensationService.list(filter);
+      const res = await compensationService.list(filter as any);
       setCompensations(res.items || []);
     };
 
@@ -64,9 +71,9 @@ export const IncapacityCompensation = () => {
         <div className="flex items-center gap-3">
           <I18nProvider locale="tr-TR">
             <DatePicker
-              value={filter.date}
+              value={filter.date as any}
               onChange={(value) => {
-                setFilter({ ...filter, date: value });
+                setFilter({ ...filter, date: value as any });
               }}
               className="w-[200px]"
               label="Tazminat Tarihi"
@@ -78,15 +85,21 @@ export const IncapacityCompensation = () => {
             label="Durum"
             placeholder="Durum"
             selectedKeys={selectedStatus}
-            onSelectionChange={(keys) => {
+            onSelectionChange={(keys:any) => {
               setSelectedStatus(keys as Set<string>);
               const selectedValue = Array.from(keys)[0];
-              setFilter({ ...filter, status: selectedValue ? Number(selectedValue) : null });
+              setFilter({
+                ...filter,
+                status: selectedValue ? Number(selectedValue) : null,
+              });
             }}
           >
-            {(status) => <SelectItem>{status.label}</SelectItem>}
+            {(status:any) => <SelectItem>{status.label}</SelectItem>}
           </Select>
-          <SearchXIcon className="cursor-pointer" onClick={() => clearSearch()} />
+          <SearchXIcon
+            className="cursor-pointer"
+            onClick={() => clearSearch()}
+          />
         </div>
         <div className="flex flex-row gap-3.5 flex-wrap">
           <Button
@@ -107,7 +120,9 @@ export const IncapacityCompensation = () => {
         <TableWrapper
           data={compensations}
           columns={columns}
-          renderCell={(rowData, columnKey) => RenderCell({ rowData, columnKey })}
+          renderCell={(rowData, columnKey) =>
+            RenderCell({ rowData, columnKey })
+          }
         />
       </div>
     </div>

@@ -7,7 +7,7 @@ import {
   DropdownTrigger,
   Navbar,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import React, { useCallback, useState, useEffect } from "react";
 import { DarkModeSwitch } from "./darkmodeswitch";
 import { useRouter } from "next/navigation";
@@ -46,7 +46,7 @@ export const UserDropdown = () => {
       </NavbarItem>
       <DropdownMenu
         aria-label='User menu actions'
-        onAction={(actionKey) => {
+        onAction={(actionKey:any) => {
           if (actionKey === "settings") {
             router.replace("/settings");
           }

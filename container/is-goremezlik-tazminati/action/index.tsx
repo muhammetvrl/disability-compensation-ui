@@ -1,5 +1,5 @@
 "use client";
-import { Breadcrumbs, BreadcrumbItem, Button } from "@nextui-org/react";
+import { Breadcrumbs, BreadcrumbItem, Button } from "@heroui/react";
 import React, { useRef, useState } from "react";
 import Panel from "@/components/panel/panel";
 import * as Yup from 'yup';

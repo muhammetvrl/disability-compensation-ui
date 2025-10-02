@@ -1,6 +1,6 @@
 "use client";
 import { FC, useRef } from 'react';
-import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerBody, DrawerFooter, Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@heroui/react";
 import { Form } from '@/components/form/form';
 import * as Yup from 'yup';
 import { FormField } from '@/components/form/types';

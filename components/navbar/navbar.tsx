@@ -1,6 +1,6 @@
 "use client";
 
-import { Input, Link, Navbar, NavbarContent } from "@nextui-org/react";
+import { Input, Link, Navbar, NavbarContent } from "@heroui/react";
 import React from "react";
 import { FeedbackIcon } from "../icons/navbar/feedback-icon";
 import { GithubIcon } from "../icons/navbar/github-icon";
@@ -27,7 +27,7 @@ export const NavbarWrapper = ({ children }: Props) => {
         <NavbarContent className="md:hidden">
           <BurguerButton />
         </NavbarContent>
-        <NavbarContent className="w-full max-md:hidden">
+        <NavbarContent className="w-full max-md:hidden py-2">
           <Input
             startContent={<SearchIcon />}
             isClearable

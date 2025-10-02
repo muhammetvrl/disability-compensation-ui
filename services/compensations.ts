@@ -1,6 +1,6 @@
 import { Expense } from '@/container/is-goremezlik-tazminati/action';
 import { api } from '@/libs/axios-instance';
-import { DateValue } from '@nextui-org/react';
+import { DateValue } from "@heroui/react";
 
 interface IClaimant {
   name: string;

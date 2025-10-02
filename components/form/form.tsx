@@ -1,6 +1,6 @@
 import { FC, RefObject } from 'react';
 import { Formik, Form as FormikForm, Field, FormikProps, FormikHelpers } from 'formik';
-import { Input, Select, Switch, Button, SelectItem, DatePicker, Textarea, ButtonProps } from '@nextui-org/react';
+import { Input, Select, Switch, Button, SelectItem, DatePicker, Textarea, ButtonProps } from "@heroui/react";
 import { FormField, SelectOption } from './types';
 import { I18nProvider, useDateFormatter } from "@react-aria/i18n";
 import { CalendarDate } from '@internationalized/date';
@@ -68,7 +68,7 @@ export const Form: FC<FormProps> = ({
                                 items={field.options || []}
                                 selectionMode="single"
                                 selectedKeys={value ? [value] : []}
-                                onChange={(e) => {
+                                onChange={(e:any) => {
                                     form.setFieldValue(field.name, e.target.value);
                                 }}
                             >
@@ -91,7 +91,7 @@ export const Form: FC<FormProps> = ({
                                     <Switch
                                         {...switchProps}
                                         isSelected={value}
-                                        onValueChange={(val) => {
+                                        onValueChange={(val:any) => {
                                             form.setFieldValue(field.name, val);
                                         }}
                                         classNames={{
@@ -127,7 +127,7 @@ export const Form: FC<FormProps> = ({
                                         formikField.value.year,
                                         formikField.value.month,
                                         formikField.value.day
-                                    ) : null}
+                                    ) : null as any}  
                                     description={field.helperText}
                                     errorMessage={error || ""}
                                     isInvalid={!!error}
@@ -149,7 +149,7 @@ export const Form: FC<FormProps> = ({
                                 errorMessage={error || ""}
                                 isInvalid={!!error}
                                 value={form.values[field.name]}
-                                onChange={(e) => {
+                                onChange={(e:any) => {
                                     form.setFieldValue(field.name, e.target.value);
                                 }}
                             />
@@ -209,7 +209,7 @@ export const Form: FC<FormProps> = ({
                                 color={error ? "danger" : "default"}
                                 isInvalid={!!error}
                                 value={value || ''}
-                                onChange={(e) => {
+                                onChange={(e:any) => {
                                     const newValue = field.type === 'number' 
                                         ? e.target.value === '' 
                                             ? '' 
