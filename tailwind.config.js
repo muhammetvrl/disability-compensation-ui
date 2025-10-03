@@ -10,7 +10,7 @@ module.exports = {
 
     // Or if using `src` directory:
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@heroui/theme/dist/components/(button|snippet|code|input).js",
+    "./node_modules/@heroui/theme/dist/components/index.js",
   ],
   theme: {
     extend: {},

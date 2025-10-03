@@ -14,8 +14,8 @@ export const Login = () => {
   const router = useRouter();
 
   const initialValues: LoginFormType = {
-    email: "e.mertdemircan@gmail.com",
-    password: "1234",
+    email: "system@user.com",
+    password: "123456",
   };
 
   const handleLogin = useCallback(
@@ -25,7 +25,7 @@ export const Login = () => {
         if (data.token) {
           await createAuthCookie(data.token);
           await localStorage.setItem("user", JSON.stringify(data.user));
-          router.replace("/");
+          router.push("/");
         }
       } catch (error) {
         console.error(error);
