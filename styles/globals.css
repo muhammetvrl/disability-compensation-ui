@@ -26,3 +26,7 @@ body {
     display: none !important;
   }
 }
+
+* {
+  outline: none !important;
+}

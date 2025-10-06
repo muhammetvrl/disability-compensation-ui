@@ -55,11 +55,27 @@ export const Documents = ({ detail }: { detail: any }) => {
         }
     };
 
+    // Safely combine documents and expenses
+    const documents = detail?.compensation?.documents || [];
+    const expenses = detail?.compensation?.expenses || [];
+    
+    const combinedData = [
+        ...documents.map((doc: any) => ({ 
+            ...doc, 
+            expenseType: doc.documentType || '-',
+            amount: '-'
+        })),
+        ...expenses.map((exp: any) => ({ 
+            ...exp, 
+            expenseType: exp.expenseType || '-'
+        }))
+    ];
+
     return (
         <div className="flex flex-col gap-4 p-4">
             <TableWrapper<DocumentType>
                 columns={columns}
-                data={[...detail?.documents?.map((doc: any) => ({ ...doc, expenseType: doc.documentType })), ...detail?.expenses]}
+                data={combinedData}
                 renderCell={renderCell}
                 rowKey="id"
             />

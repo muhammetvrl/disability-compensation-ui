@@ -2,7 +2,7 @@
 "use client";
 import React, { useRef } from "react";
 import { Button } from "@heroui/react";
-import { useReactToPrint } from 'react-to-print';
+import { useReactToPrint } from "react-to-print";
 import { PrinterIcon } from "lucide-react";
 import { TableWrapper } from "@/components/table/table";
 
@@ -67,7 +67,7 @@ export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
-    pageStyle: printStyles
+    pageStyle: printStyles,
   });
 
   // Aktif/Pasif Dönem Özeti için tablo yapısı
@@ -76,13 +76,57 @@ export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
     { uid: "kazaTarihi", name: "Kaza Tarihi" },
     { uid: "raporTarihi", name: "Rapor Tarihi" },
     { uid: "emeklilikTarihi", name: "Emeklilik Tarihi" },
-    { uid: "destekSonuTarihi", name: "Destek Sonu Tarihi" }
+    { uid: "destekSonuTarihi", name: "Destek Sonu Tarihi" },
   ];
 
+  // Helper function to format dates
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    try {
+      return new Date(dateString).toLocaleDateString("tr-TR");
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Helper function to format age object
+  const formatAge = (
+    ageObj: { year?: number; month?: number; day?: number } | null | undefined
+  ) => {
+    if (!ageObj) return "-";
+    const { year = 0, month = 0, day = 0 } = ageObj;
+    return `${year} yıl ${month} ay ${day} gün`;
+  };
+
+  // Get calculation data
+  const calc = detail?.calculation;
+  const summary = calc?.activePassivePeriodSummary;
+
   const donemData = [
-    { label: "//", kazaTarihi: "08.09.2024", raporTarihi: "24.11.2024", emeklilikTarihi: "05.07.2057", destekSonuTarihi: "05.07.2067" },
-    { label: "Yaş", kazaTarihi: "27 yıl 2 ay 3 gün", raporTarihi: "27 yıl 4 ay 26 gün", emeklilikTarihi: "60 yıl", destekSonuTarihi: "70 yıl" },
-    { label: "Dönem Süresi", kazaTarihi: "-", raporTarihi: "2 ay 16 gün", emeklilikTarihi: "32 yıl 7 ay 11 gün", destekSonuTarihi: "10 yıl" }
+    {
+      id: 'donem-1',
+      label: "Tarih",
+      kazaTarihi: formatDate(summary?.eventDate),
+      raporTarihi: formatDate(summary?.reportDate),
+      emeklilikTarihi: formatDate(summary?.retirementDate),
+      destekSonuTarihi: formatDate(summary?.supportEndDate),
+    },
+    {
+      id: 'donem-2',
+      label: "Yaş",
+      kazaTarihi: formatAge(summary?.eventDateAge),
+      raporTarihi: formatAge(summary?.reportDateAge),
+      emeklilikTarihi: formatAge(summary?.retirementDateAge),
+      destekSonuTarihi: formatAge(summary?.supportEndDateAge),
+    },
+    {
+      id: 'donem-3',
+      label: "Dönem Süresi",
+      kazaTarihi: "-",
+      raporTarihi: formatAge(summary?.reportPeriod),
+      emeklilikTarihi: formatAge(summary?.retirementPeriod),
+      destekSonuTarihi: formatAge(summary?.supportEndPeriod),
+    },
   ];
 
   // Tazminat tabloları için ortak sütun yapısı
@@ -91,20 +135,47 @@ export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
     { uid: "bilinenDonem", name: "Bilinen Dönem" },
     { uid: "aktifDonem", name: "Aktif Dönem" },
     { uid: "pasifDonem", name: "Pasif Dönem" },
-    { uid: "toplam", name: "Toplam" }
+    { uid: "toplam", name: "Toplam" },
   ];
 
-  // Tazminat tabloları için ortak veri yapısı
-  const tazminatData = [
-    { tutar: "Tutar", bilinenDonem: "Bekleniyor ₺", aktifDonem: "Bekleniyor ₺", pasifDonem: "Bekleniyor ₺", toplam: "Bekleniyor ₺" }
-  ];
+  // Helper function to format currency
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined) return "Hesaplanmadı";
+    return `${amount.toLocaleString("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} ₺`;
+  };
+
+  // Tazminat tabloları için veri yapısı - gerçek verilerle doldurulacak
+  const getCompensationData = (
+    compensationType:
+      | "temporaryDisability"
+      | "permanentDisability"
+      | "temporaryCaregiverDisability"
+      | "permanentCaregiverDisability"
+      | "totalDisability"
+  ) => {
+    const compensation = calc?.[compensationType];
+
+    return [
+      {
+        id: `${compensationType}-row`,
+        tutar: "Tutar",
+        bilinenDonem: formatCurrency(compensation?.knownPeriodAmount),
+        aktifDonem: formatCurrency(compensation?.activePeriodAmount),
+        pasifDonem: formatCurrency(compensation?.passivePeriodAmount),
+        toplam: formatCurrency(compensation?.totalAmount),
+      },
+    ];
+  };
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-end no-print">
-        <Button 
-          color="primary" 
-          size="sm" 
+        <Button
+          color="primary"
+          size="sm"
           startContent={<PrinterIcon size={18} />}
           onPress={() => handlePrint()}
         >
@@ -118,58 +189,69 @@ export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
             {/* Aktif/Pasif Dönem Özeti */}
             <div className="flex flex-col gap-2">
               <h4 className="text-lg font-semibold">Aktif/Pasif Dönem Özeti</h4>
-              <TableWrapper 
-                columns={donemColumns}
-                data={donemData}
-              />
-              <p className="text-sm italic">*TRH 2010 Yaşam Tablosu kullanılarak hesaplanmıştır.</p>
+              <TableWrapper columns={donemColumns} data={donemData} />
+              <p className="text-sm italic">
+                *TRH 2010 Yaşam Tablosu kullanılarak hesaplanmıştır.
+              </p>
             </div>
 
             {/* Geçici İşgöremezlik Tazminatı */}
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <h4 className="text-lg mt-4 font-semibold">Geçici İşgöremezlik Tazminatı (8 Ay)</h4>
-                <Button color="primary" size="sm">Detay</Button>
+                <h4 className="text-lg mt-4 font-semibold">
+                  Geçici İşgöremezlik Tazminatı
+                  {detail?.compensation?.temporaryDisabilityDay &&
+                    ` (${detail.compensation.temporaryDisabilityDay} Gün)`}
+                </h4>
+                <Button color="primary" size="sm" className="no-print">
+                  Detay
+                </Button>
               </div>
-              <TableWrapper 
+              <TableWrapper
                 columns={tazminatColumns}
-                data={tazminatData}
+                data={getCompensationData("temporaryDisability")}
               />
             </div>
 
             {/* Sürekli İşgöremezlik Tazminatı */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-lg mt-4 font-semibold">Sürekli İşgöremezlik Tazminatı</h4>
-              <TableWrapper 
+              <h4 className="text-lg mt-4 font-semibold">
+                Sürekli İşgöremezlik Tazminatı
+              </h4>
+              <TableWrapper
                 columns={tazminatColumns}
-                data={tazminatData}
+                data={getCompensationData("permanentDisability")}
               />
             </div>
 
             {/* Geçici Bakıcı Tazminatı */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-lg mt-4 font-semibold">Geçici Bakıcı Tazminatı</h4>
-              <TableWrapper 
+              <h4 className="text-lg mt-4 font-semibold">
+                Geçici Bakıcı Tazminatı
+              </h4>
+              <TableWrapper
                 columns={tazminatColumns}
-                data={tazminatData}
+                data={getCompensationData("temporaryCaregiverDisability")}
               />
             </div>
 
             {/* Sürekli Bakıcı Tazminatı */}
             <div className="flex flex-col gap-2">
-              <h4 className="text-lg mt-4 font-semibold">Sürekli Bakıcı Tazminatı</h4>
-              <TableWrapper 
+              <h4 className="text-lg mt-4 font-semibold">
+                Sürekli Bakıcı Tazminatı
+              </h4>
+              <TableWrapper
                 columns={tazminatColumns}
-                data={tazminatData}
+                data={getCompensationData("permanentCaregiverDisability")}
               />
             </div>
 
             {/* Sonuç */}
             <div className="flex flex-col gap-2">
               <h4 className="text-lg mt-4 font-semibold">Sonuç</h4>
-              <TableWrapper 
+              <TableWrapper
                 columns={tazminatColumns}
-                data={tazminatData}
+                data={getCompensationData("totalDisability")}
               />
             </div>
           </div>
@@ -177,4 +259,4 @@ export const HesaplamaBilgileri = ({ detail }: { detail: any }) => {
       </div>
     </div>
   );
-}; 
+};

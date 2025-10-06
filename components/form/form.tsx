@@ -14,6 +14,7 @@ interface FormProps {
     hideSubmitButton?: boolean;
     defaultCol?: number;
     submitButtonProps?: ButtonProps;
+    onFieldChange?: (fieldName: string, value: any) => void;
 }
 
 export const Form: FC<FormProps> = ({
@@ -25,6 +26,7 @@ export const Form: FC<FormProps> = ({
     hideSubmitButton = false,
     defaultCol = 6,
     submitButtonProps,
+    onFieldChange,
 }) => {
     const renderField = (field: FormField, form: any) => {
         const switchProps = {
@@ -70,10 +72,11 @@ export const Form: FC<FormProps> = ({
                                 selectedKeys={value ? [value] : []}
                                 onChange={(e:any) => {
                                     form.setFieldValue(field.name, e.target.value);
+                                    onFieldChange?.(field.name, e.target.value);
                                 }}
                             >
                                 {(field.options || []).map((option: SelectOption) => (
-                                    <SelectItem key={option.value} value={option.value}>
+                                    <SelectItem key={option.value}>
                                         {option.label}
                                     </SelectItem>
                                 ))}
@@ -93,6 +96,7 @@ export const Form: FC<FormProps> = ({
                                         isSelected={value}
                                         onValueChange={(val:any) => {
                                             form.setFieldValue(field.name, val);
+                                            onFieldChange?.(field.name, val);
                                         }}
                                         classNames={{
                                             base: error ? "border-danger" : ""
@@ -122,6 +126,7 @@ export const Form: FC<FormProps> = ({
                                     {...commonProps}
                                     onChange={(date) => {
                                         form.setFieldValue(field.name, date);
+                                        onFieldChange?.(field.name, date);
                                     }}
                                     value={formikField.value ? new CalendarDate(
                                         formikField.value.year,
@@ -151,6 +156,7 @@ export const Form: FC<FormProps> = ({
                                 value={form.values[field.name]}
                                 onChange={(e:any) => {
                                     form.setFieldValue(field.name, e.target.value);
+                                    onFieldChange?.(field.name, e.target.value);
                                 }}
                             />
                         )}
@@ -170,9 +176,9 @@ export const Form: FC<FormProps> = ({
                                     type="file"
                                     accept={field.accept}
                                     onChange={(event) => {
-                                        debugger
                                         const file = event.currentTarget.files?.[0];
                                         form.setFieldValue(field.name, file);
+                                        onFieldChange?.(field.name, file);
                                     }}
                                     className="hidden"
                                     id={field.name}
@@ -216,6 +222,7 @@ export const Form: FC<FormProps> = ({
                                             : Number(e.target.value)
                                         : e.target.value;
                                     form.setFieldValue(field.name, newValue);
+                                    onFieldChange?.(field.name, newValue);
                                 }}
                             />
                         )}

@@ -1,6 +1,20 @@
 "use client";
-import { Breadcrumbs, BreadcrumbItem, Tabs, Tab, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input, Switch, Textarea } from "@heroui/react";
+import {
+  Breadcrumbs,
+  BreadcrumbItem,
+  Tabs,
+  Tab,
+  Button,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  Input,
+  Switch,
+  Textarea,
+} from "@heroui/react";
 import React, { useCallback, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import { IncapacityApprovalForm } from "@/helpers/types";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -11,7 +25,7 @@ import { Documents } from "./tabs/documents";
 
 const IncapacityApprovalSchema = Yup.object().shape({
   disabilityRate: Yup.number().required("Engel oranı zorunludur"),
-  temporaryDisabilityDay: Yup.number().required("Geçici engel günü zorunludur"),
+  temporaryDisabilityDay: Yup.number().notRequired(), // Made optional as per requirement #10
 });
 
 const IncapacityRejectSchema = Yup.object().shape({
@@ -23,44 +37,114 @@ interface IncapacityCompensationResultProps {
   detail: any;
 }
 
-export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensationResultProps) => {
+export const IncapacityCompensationResult = ({
+  id,
+  detail,
+}: IncapacityCompensationResultProps) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleApprove = useCallback(async (values: IncapacityApprovalForm) => {
-    setIsLoading(true);
-    try {
-      debugger
-      const formData = {
-        ...values,
-        disabilityRate: Number(values.disabilityRate),
-        temporaryDisabilityDay: Number(values.temporaryDisabilityDay)
-      };
-      await compensationService.approve(detail.id, formData);
-      alert("Tazminat başarıyla onaylandı!");
-    } catch (error) {
-      console.error("Onay işlemi başarısız:", error);
-      alert("Onay işlemi sırasında bir hata oluştu!");
-    } finally {
-      setIsLoading(false);
-      setIsModalOpen(false);
-    }
-  }, [detail]);
+  const handleApprove = useCallback(
+    async (values: IncapacityApprovalForm) => {
+      setIsLoading(true);
+      try {
+        const formData: any = {
+          ...values,
+          disabilityRate: Number(values.disabilityRate) / 100, // Convert percentage to decimal as per requirement #11
+        };
 
-  const handleReject = useCallback(async (values: { id: string; rejectReason: string }) => {
-    setIsLoading(true);
-    try {
-      await compensationService.reject(values.id, values);
-      alert("Tazminat başarıyla reddedildi!");
-    } catch (error) {
-      console.error("Reddetme işlemi başarısız:", error);
-      alert("Reddetme işlemi sırasında bir hata oluştu!");
-    } finally {
-      setIsLoading(false);
-      setIsRejectModalOpen(false);
-    }
-  }, []);
+        // Only include temporaryDisabilityDay if it has a valid value greater than 0
+        if (
+          values.temporaryDisabilityDay &&
+          Number(values.temporaryDisabilityDay) > 0
+        ) {
+          formData.temporaryDisabilityDay = Number(
+            values.temporaryDisabilityDay
+          );
+        }
+
+        const response = await compensationService.approve(id, formData);
+
+        // Check if response indicates success
+        if (response?.Success === true || response?.Succcess === true) {
+          toast.success("Tazminat başarıyla onaylandı!");
+          setIsModalOpen(false);
+        } else {
+          // Handle validation errors
+          if (response?.ValidationErrors && response.ValidationErrors.length > 0) {
+            response.ValidationErrors.forEach((err: any) => {
+              toast.error(err.ErrorMessage);
+            });
+          } else if (response?.Message) {
+            toast.error(response.Message);
+          } else {
+            toast.error("Onay işlemi sırasında bir hata oluştu!");
+          }
+        }
+      } catch (error: any) {
+        console.error("Onay işlemi başarısız:", error);
+
+        // Try to extract error message from response
+        const errorData = error?.response?.data;
+        if (errorData?.ValidationErrors && errorData.ValidationErrors.length > 0) {
+          errorData.ValidationErrors.forEach((err: any) => {
+            toast.error(err.ErrorMessage);
+          });
+        } else if (errorData?.Message) {
+          toast.error(errorData.Message);
+        } else {
+          toast.error("Onay işlemi sırasında bir hata oluştu!");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [id]
+  );
+
+  const handleReject = useCallback(
+    async (values: { id: string; rejectReason: string }) => {
+      setIsLoading(true);
+      try {
+        const response = await compensationService.reject(id, values);
+
+        // Check if response indicates success
+        if (response?.Success === true || response?.Succcess === true) {
+          toast.success("Tazminat başarıyla reddedildi!");
+          setIsRejectModalOpen(false);
+        } else {
+          // Handle validation errors
+          if (response?.ValidationErrors && response.ValidationErrors.length > 0) {
+            response.ValidationErrors.forEach((err: any) => {
+              toast.error(err.ErrorMessage);
+            });
+          } else if (response?.Message) {
+            toast.error(response.Message);
+          } else {
+            toast.error("Reddetme işlemi sırasında bir hata oluştu!");
+          }
+        }
+      } catch (error: any) {
+        console.error("Reddetme işlemi başarısız:", error);
+
+        // Try to extract error message from response
+        const errorData = error?.response?.data;
+        if (errorData?.ValidationErrors && errorData.ValidationErrors.length > 0) {
+          errorData.ValidationErrors.forEach((err: any) => {
+            toast.error(err.ErrorMessage);
+          });
+        } else if (errorData?.Message) {
+          toast.error(errorData.Message);
+        } else {
+          toast.error("Reddetme işlemi sırasında bir hata oluştu!");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [id]
+  );
 
   return (
     <div className="my-10 px-4 lg:px-6 max-w-[95rem] mx-auto w-full flex flex-col gap-4 mt-9">
@@ -77,10 +161,11 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
           aria-label="Tazminat Hesabı Tabs"
           variant="underlined"
           classNames={{
-            tabList: "gap-6 w-full relative rounded-none p-0 border-b border-divider",
+            tabList:
+              "gap-6 w-full relative rounded-none p-0 border-b border-divider",
             cursor: "w-full bg-primary",
             tab: "max-w-fit px-0 h-12",
-            tabContent: "group-data-[selected=true]:text-primary"
+            tabContent: "group-data-[selected=true]:text-primary",
           }}
         >
           <Tab key="file-info" title="Dosya Bilgileri">
@@ -95,10 +180,18 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
         </Tabs>
 
         <div className="flex w-full gap-2 justify-end mt-6">
-          <Button variant="shadow" color="success" onClick={() => setIsModalOpen(true)}>
+          <Button
+            variant="shadow"
+            color="success"
+            onPress={() => setIsModalOpen(true)}
+          >
             Onayla
           </Button>
-          <Button variant="shadow" color="danger" onClick={() => setIsRejectModalOpen(true)}>
+          <Button
+            variant="shadow"
+            color="danger"
+            onPress={() => setIsRejectModalOpen(true)}
+          >
             Reddet
           </Button>
         </div>
@@ -107,12 +200,14 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
       {/* Onay Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Tazminat Onaylama</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Tazminat Onaylama
+          </ModalHeader>
           <ModalBody>
             <Formik
               initialValues={{
-                id: detail?.id,
-                disabilityRate: "0",
+                id: id, // Use id parameter instead of detail?.id
+                disabilityRate: "",
                 hasTemporaryDisability: false,
                 hasCaregiver: false,
                 temporaryDisabilityDay: "0",
@@ -120,7 +215,15 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
               validationSchema={IncapacityApprovalSchema}
               onSubmit={handleApprove}
             >
-              {({ values, errors, touched, handleChange, handleSubmit, setFieldValue, isSubmitting }) => (
+              {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleSubmit,
+                setFieldValue,
+                isSubmitting,
+              }) => (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
@@ -129,8 +232,12 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                       type="number"
                       value={values.disabilityRate}
                       onChange={handleChange}
-                      isInvalid={!!errors.disabilityRate && !!touched.disabilityRate}
-                      errorMessage={touched.disabilityRate && errors.disabilityRate}
+                      isInvalid={
+                        !!errors.disabilityRate && !!touched.disabilityRate
+                      }
+                      errorMessage={
+                        touched.disabilityRate && errors.disabilityRate
+                      }
                       variant="bordered"
                       isRequired
                       className="w-full"
@@ -141,10 +248,16 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                       type="number"
                       value={values.temporaryDisabilityDay}
                       onChange={handleChange}
-                      isInvalid={!!errors.temporaryDisabilityDay && !!touched.temporaryDisabilityDay}
-                      errorMessage={touched.temporaryDisabilityDay && errors.temporaryDisabilityDay}
+                      isInvalid={
+                        !!errors.temporaryDisabilityDay &&
+                        !!touched.temporaryDisabilityDay
+                      }
+                      errorMessage={
+                        touched.temporaryDisabilityDay &&
+                        errors.temporaryDisabilityDay
+                      }
                       variant="bordered"
-                      isRequired
+                      isRequired={false} // Made optional as per requirement #10
                       className="w-full"
                     />
                   </div>
@@ -153,7 +266,9 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     <Switch
                       name="hasTemporaryDisability"
                       isSelected={values.hasTemporaryDisability}
-                      onValueChange={(checked:boolean) => setFieldValue("hasTemporaryDisability", checked)}
+                      onValueChange={(checked: boolean) =>
+                        setFieldValue("hasTemporaryDisability", checked)
+                      }
                       size="lg"
                       className="w-full"
                     >
@@ -162,7 +277,9 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     <Switch
                       name="hasCaregiver"
                       isSelected={values.hasCaregiver}
-                      onValueChange={(checked:boolean) => setFieldValue("hasCaregiver", checked)}
+                      onValueChange={(checked: boolean) =>
+                        setFieldValue("hasCaregiver", checked)
+                      }
                       size="lg"
                       className="w-full"
                     >
@@ -178,7 +295,11 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     >
                       {isSubmitting ? "Onaylanıyor..." : "Onayla"}
                     </Button>
-                    <Button variant="flat" color="danger" onPress={() => setIsModalOpen(false)}>
+                    <Button
+                      variant="flat"
+                      color="danger"
+                      onPress={() => setIsModalOpen(false)}
+                    >
                       İptal
                     </Button>
                   </div>
@@ -190,19 +311,31 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
       </Modal>
 
       {/* Reddetme Modal */}
-      <Modal isOpen={isRejectModalOpen} onClose={() => setIsRejectModalOpen(false)}>
+      <Modal
+        isOpen={isRejectModalOpen}
+        onClose={() => setIsRejectModalOpen(false)}
+      >
         <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">Tazminat Reddetme</ModalHeader>
+          <ModalHeader className="flex flex-col gap-1">
+            Tazminat Reddetme
+          </ModalHeader>
           <ModalBody>
             <Formik
               initialValues={{
-                id: detail?.id,
-                rejectReason: ""
+                id: id, // Use id parameter instead of detail?.id
+                rejectReason: "",
               }}
               validationSchema={IncapacityRejectSchema}
               onSubmit={handleReject}
             >
-              {({ values, errors, touched, handleChange, handleSubmit, isSubmitting }) => (
+              {({
+                values,
+                errors,
+                touched,
+                handleChange,
+                handleSubmit,
+                isSubmitting,
+              }) => (
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                   <div className="grid grid-cols-1 gap-4">
                     <Textarea
@@ -210,7 +343,9 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                       name="rejectReason"
                       value={values.rejectReason}
                       onChange={handleChange}
-                      isInvalid={!!errors.rejectReason && !!touched.rejectReason}
+                      isInvalid={
+                        !!errors.rejectReason && !!touched.rejectReason
+                      }
                       errorMessage={touched.rejectReason && errors.rejectReason}
                       variant="bordered"
                       isRequired
@@ -227,7 +362,11 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
                     >
                       {isSubmitting ? "Reddediliyor..." : "Reddet"}
                     </Button>
-                    <Button variant="flat" color="success" onPress={() => setIsRejectModalOpen(false)}>
+                    <Button
+                      variant="flat"
+                      color="success"
+                      onPress={() => setIsRejectModalOpen(false)}
+                    >
                       İptal
                     </Button>
                   </div>
@@ -237,6 +376,7 @@ export const IncapacityCompensationResult = ({ id, detail }: IncapacityCompensat
           </ModalBody>
         </ModalContent>
       </Modal>
+      <ToastContainer />
     </div>
   );
 };
