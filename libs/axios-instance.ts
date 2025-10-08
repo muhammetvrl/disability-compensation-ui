@@ -52,6 +52,7 @@ export function createAxiosInstance(): AxiosInstance {
       const response = error.response
 
       // API hatalarını özelleştirilmiş hata sınıfına dönüştür
+      console.log("🚀 ~ createAxiosInstance ~ response:", response)
       if (response) {
         
         if(response.status === 401) {

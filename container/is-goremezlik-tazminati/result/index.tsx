@@ -67,7 +67,7 @@ export const IncapacityCompensationResult = ({
         const response = await compensationService.approve(id, formData);
 
         // Check if response indicates success
-        if (response?.Success === true || response?.Succcess === true) {
+        if (response?.success === true || response?.succcess === true) {
           toast.success("Tazminat başarıyla onaylandı!");
           setIsModalOpen(false);
         } else {
